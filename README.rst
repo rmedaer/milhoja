@@ -29,7 +29,8 @@ Credits
 -------
 
 Copyright 2017 Raphael Medaer <raphael@medaer.me>
-          2017 Abdó Roig-Maranges <abdo.roig@gmail.com>
+
+Copyright 2017 Abdó Roig-Maranges <abdo.roig@gmail.com>
 
 License
 -------
