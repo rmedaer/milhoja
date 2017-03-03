@@ -10,7 +10,9 @@ from pygit2 import (
     discover_repository,
     GIT_MERGE_ANALYSIS_UP_TO_DATE,
     GIT_MERGE_ANALYSIS_FASTFORWARD,
-    GIT_MERGE_ANALYSIS_NORMAL
+    GIT_MERGE_ANALYSIS_NORMAL,
+    GIT_SORT_TOPOLOGICAL,
+    GIT_SORT_REVERSE
 )
 from cookiecutter.main import cookiecutter
 
@@ -55,6 +57,37 @@ class TemporaryWorktree():
 class Milhoja(object):
     def __init__(self, repo):
         self.repo = repo
+
+    def get_template_branch(self):
+        branch = self.repo.lookup_branch(__template_branch__)
+
+        if branch is None:
+            raise Exception('Template branch not found')
+
+        return branch
+
+    def get_root_commit(self):
+        return self.repo.walk(
+            self.get_template_branch().target,
+            GIT_SORT_TOPOLOGICAL | GIT_SORT_REVERSE
+        ).next()
+
+    def get_last_commit(self):
+        return self.repo.get(self.get_template_branch().target)
+
+    def get_template(self):
+        commit = self.get_root_commit()
+        note = self.repo.lookup_note(commit.id.__str__(), __notes_template_ref__)
+        return json.loads(note.message)
+
+    def get_context(self):
+        # An alias of "get_last_context"
+        return self.get_last_context()
+
+    def get_last_context(self):
+        commit = self.get_last_commit()
+        note = self.repo.lookup_note(commit.id.__str__(), __notes_context_ref__)
+        return json.loads(note.message)
 
     def install(self, template, checkout='master', extra_context=None, no_input=False):
         if extra_context is None:

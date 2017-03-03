@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import click
 from cookiecutter.cli import validate_extra_context
 from .milhoja import Milhoja # indeed ...
@@ -21,6 +22,17 @@ def main(ctx, c):
     c -- Path where to run milhoja
     """
     ctx.obj['milhoja'] = Milhoja(open_or_init_repository(c))
+
+@main.command()
+@click.pass_context
+def show(ctx, **kwargs):
+    info = ctx.obj['milhoja'].get_template()
+    click.echo('Template: %s' % info['src'])
+    click.echo('Checkout: %s' % info['ref'])
+
+    context = ctx.obj['milhoja'].get_context()
+    click.echo('Context:')
+    click.echo(json.dumps(context, indent=4, separators=(',', ': ')))
 
 @main.command()
 @click.argument('template')
