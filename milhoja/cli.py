@@ -2,7 +2,8 @@
 
 import click
 from cookiecutter.cli import validate_extra_context
-from milhoja import Milhoja # indeed ...
+from .milhoja import Milhoja # indeed ...
+from .utils import open_or_init_repository
 
 @click.group()
 @click.option(
@@ -19,7 +20,7 @@ def main(ctx, c):
     ctx -- CLI context.
     c -- Path where to run milhoja
     """
-    ctx.obj['milhoja'] = Milhoja(c)
+    ctx.obj['milhoja'] = Milhoja(open_or_init_repository(c))
 
 @main.command()
 @click.argument('template')
@@ -54,4 +55,4 @@ def install(ctx, template, **kwargs):
 )
 @click.pass_context
 def upgrade(ctx, **kwargs):
-    ctx.obj['milhoja'].install(**kwargs)
+    ctx.obj['milhoja'].upgrade(**kwargs)
