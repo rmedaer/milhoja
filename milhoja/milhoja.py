@@ -26,7 +26,7 @@ __commit_merge_message__ = 'Installed template'
 class TemporaryWorktree():
     def __init__(self, upstream, name):
         if name in upstream.list_worktrees():
-            raise Exception('Worktree %s already exists' % __worktree_name__)
+            raise Exception('Worktree %s already exists' % name)
 
         self.upstream = upstream
         self.name = name
