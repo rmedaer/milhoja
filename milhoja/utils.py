@@ -8,18 +8,27 @@ from pygit2 import (
 
 __commit_init_message__ = 'Initialized repository'
 
-def open_or_init_repository(path):
-    # Try to open the repository
+def open_repository(path):
     try:
-        repo = Repository(discover_repository(path))
-    except KeyError:
+        return Repository(discover_repository(path))
+    except:
+        raise Exception('Failed to open Git repository')
+
+def open_or_init_repository(path):
+    try:
+        return open_repository(path)
+    except:
+        pass
+
+    try:
         repo = init_repository(path)
-        init_commit = repo.create_commit(
+        repo.create_commit(
             'HEAD',
             repo.default_signature, repo.default_signature,
             __commit_init_message__,
             repo.index.write_tree(),
             []
         )
-
-    return repo
+        return repo
+    except:
+        raise Exception('Failed to initialize Git repository')

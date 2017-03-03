@@ -4,7 +4,7 @@ import json
 import click
 from cookiecutter.cli import validate_extra_context
 from .milhoja import Milhoja # indeed ...
-from .utils import open_or_init_repository
+from .utils import open_repository, open_or_init_repository
 
 @click.group()
 @click.option(
@@ -21,16 +21,17 @@ def main(ctx, c):
     ctx -- CLI context.
     c -- Path where to run milhoja
     """
-    ctx.obj['milhoja'] = Milhoja(open_or_init_repository(c))
+    ctx.obj['target'] = c
 
 @main.command()
 @click.pass_context
 def show(ctx, **kwargs):
-    info = ctx.obj['milhoja'].get_template()
+    milhoja = Milhoja(open_repository(ctx.obj['target']))
+    info = milhoja.get_template()
+    context = milhoja.get_context()
+
     click.echo('Template: %s' % info['src'])
     click.echo('Checkout: %s' % info['ref'])
-
-    context = ctx.obj['milhoja'].get_context()
     click.echo('Context:')
     click.echo(json.dumps(context, indent=4, separators=(',', ': ')))
 
@@ -49,10 +50,8 @@ def show(ctx, **kwargs):
 )
 @click.pass_context
 def install(ctx, template, **kwargs):
-    ctx.obj['milhoja'].install(
-        template,
-        **kwargs
-    )
+    milhoja = Milhoja(open_or_init_repository(ctx.obj['target']))
+    milhoja.install(template, **kwargs)
 
 @main.command()
 @click.argument(u'extra_context', nargs=-1, callback=validate_extra_context)
@@ -67,4 +66,5 @@ def install(ctx, template, **kwargs):
 )
 @click.pass_context
 def upgrade(ctx, **kwargs):
-    ctx.obj['milhoja'].upgrade(**kwargs)
+    milhoja = Milhoja(open_repository(ctx.obj['target']))
+    milhoja.install(template, **kwargs)
