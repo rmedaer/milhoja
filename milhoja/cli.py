@@ -58,6 +58,7 @@ def install(ctx, template, **kwargs):
 @click.option(
     u'-c', u'--checkout',
     help=u'branch, tag or commit to checkout',
+    default=u'master'
 )
 @click.option(
     u'--no-input', is_flag=True,
@@ -67,4 +68,4 @@ def install(ctx, template, **kwargs):
 @click.pass_context
 def upgrade(ctx, **kwargs):
     milhoja = Milhoja(open_repository(ctx.obj['target']))
-    milhoja.install(template, **kwargs)
+    milhoja.upgrade(**kwargs)

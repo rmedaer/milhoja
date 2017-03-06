@@ -21,10 +21,11 @@ __template_branch__ = 'template'
 __notes_template_ref__ = 'refs/notes/template'
 __notes_context_ref__ = 'refs/notes/context'
 __commit_apply_message__ = 'Apply template'
-__commit_merge_message__ = 'Installed template'
+__commit_install_message__ = 'Installed template'
+__commit_upgrade_message__ = 'Upgraded template'
 
 class TemporaryWorktree():
-    def __init__(self, upstream, name):
+    def __init__(self, upstream, name, prune=True):
         if name in upstream.list_worktrees():
             raise Exception('Worktree %s already exists' % name)
 
@@ -34,13 +35,19 @@ class TemporaryWorktree():
         self.path = os.path.join(self.tmp, name)
         self.obj = None
         self.repo = None
+        self.prune = prune
 
     def __enter__(self):
+        print self.tmp
         self.obj = self.upstream.add_worktree(self.name, self.path)
         self.repo = Repository(self.obj.path)
         return self
 
     def __exit__(self, type, value, traceback):
+        # Skip auto prune if flag is enable
+        if not self.prune:
+            return
+
         # Remove temp directory
         shutil.rmtree(self.tmp)
 
@@ -57,6 +64,9 @@ class TemporaryWorktree():
 class Milhoja(object):
     def __init__(self, repo):
         self.repo = repo
+
+    def is_installed(self):
+        return __template_branch__ in self.repo.listall_branches()
 
     def get_template_branch(self):
         branch = self.repo.lookup_branch(__template_branch__)
@@ -87,15 +97,76 @@ class Milhoja(object):
     def get_last_context(self):
         commit = self.get_last_commit()
         note = self.repo.lookup_note(commit.id.__str__(), __notes_context_ref__)
-        return json.loads(note.message)
+
+        context = json.loads(note.message)
+        assert isinstance(context, dict)
+
+        return context
+
+    def create_notes(self, commit, info, context):
+        # Create Git Note with serialized template references
+        self.repo.create_note(
+            json.dumps(info),
+            self.repo.default_signature,
+            self.repo.default_signature,
+            commit.hex,
+            __notes_template_ref__
+        )
+        # Create Git Note with serialized context
+        self.repo.create_note(
+            json.dumps(context),
+            self.repo.default_signature,
+            self.repo.default_signature,
+            commit.hex,
+            __notes_context_ref__
+        )
+
+    def merge_template_branch(self, message):
+        # Lookup template branch
+        branch = self.repo.lookup_branch(__template_branch__)
+
+        # Analyze merge between template branch and HEAD
+        analysis, _ = self.repo.merge_analysis(branch.target)
+
+        # Up to date, nothing to do
+        if analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE:
+            # Should append if user reinstalled an existing template
+            # TODO log this info to user
+            pass
+
+        elif analysis & GIT_MERGE_ANALYSIS_FASTFORWARD or analysis & GIT_MERGE_ANALYSIS_NORMAL:
+            # Let's merge template changes.
+            index = self.repo.merge_commits(self.repo.head.target, branch.target)
+
+            # TODO What to do with conflict ?
+            #        -> Let user resolve ?
+            #        -> Raise an error after analysis ?
+            assert index.conflicts is None
+
+            # Write index
+            tree = index.write_tree(self.repo)
+
+            # Commit it
+            self.repo.create_commit(
+                'HEAD',
+                self.repo.default_signature,
+                self.repo.default_signature,
+                message,
+                tree,
+                [self.repo.head.target, branch.target]
+            )
+
+            self.repo.checkout('HEAD')
+        else:
+            raise AssertionError('Unknown merge analysis result')
 
     def install(self, template, checkout='master', extra_context=None, no_input=False):
         if extra_context is None:
             extra_context = {}
 
         # Assert template branch doesn't exist or raise conflict
-        if __template_branch__ in self.repo.listall_branches():
-            raise Exception('Branch %s already exists' % __template_branch__)
+        if self.is_installed():
+            raise Exception('Template already installed')
 
         if __worktree_name__ in self.repo.list_worktrees():
             raise Exception('Worktree %s already exists' % __worktree_name__)
@@ -126,9 +197,10 @@ class Milhoja(object):
                 tree,
                 []
             )
+            commit = self.repo.get(oid)
 
             # Create a branch which target orphaned commit
-            branch = self.repo.create_branch(__template_branch__, self.repo.get(oid))
+            branch = self.repo.create_branch(__template_branch__, commit)
 
             # Optionally, set worktree HEAD to this branch (useful for debugging)
             # Optional ? Obviously the tmp worktree will be removed in __exit__
@@ -140,94 +212,74 @@ class Milhoja(object):
             ref=checkout
         )
 
-        # Create Git Note with serialized template references
-        self.repo.create_note(
-            json.dumps(info),
-            self.repo.default_signature,
-            self.repo.default_signature,
-            oid.__str__(),
-            __notes_template_ref__
-        )
-        # Create Git Note with serialized context
-        self.repo.create_note(
-            json.dumps(context),
-            self.repo.default_signature,
-            self.repo.default_signature,
-            oid.__str__(),
-            __notes_context_ref__
-        )
+        # Create notes with meta data (template + context)
+        self.create_notes(commit, info, context)
 
-        # Analyze merge between template branch and HEAD
-        analysis, _ = self.repo.merge_analysis(branch.target)
-
-        # Up to date, nothing to do
-        if analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE:
-            # Should append if user reinstalled an existing template
-            # TODO log this info to user
-            pass
-
-        elif analysis & GIT_MERGE_ANALYSIS_FASTFORWARD or analysis & GIT_MERGE_ANALYSIS_NORMAL:
-            # Let's merge template changes.
-            index = self.repo.merge_commits(self.repo.head.target, branch.target)
-
-            # TODO What to do with conflict ?
-            #        -> Let user resolve ?
-            #        -> Raise an error after analysis ?
-            assert index.conflicts is None
-
-            # Write index
-            tree = index.write_tree(self.repo)
-
-            # Commit it
-            self.repo.create_commit(
-                'HEAD',
-                self.repo.default_signature,
-                self.repo.default_signature,
-                __commit_merge_message__,
-                tree,
-                [self.repo.head.target, branch.target]
-            )
-
-            self.repo.checkout('HEAD')
-        else:
-            raise AssertionError('Unknown merge analysis result')
+        # Let's merge our changes into HEAD
+        self.merge_template_branch(__commit_install_message__)
 
 
     def upgrade(self, checkout='master', extra_context=None, no_input=False):
         if extra_context is None:
             extra_context = {}
 
-        # TODO Assert template branch exist or raise an error
+        # Assert template branch exist or raise an error
+        if not self.is_installed():
+            raise Exception('Not any template installed')
 
-        # TODO Find first template commit in template branch (root).
-        # TODO Try to fetch note from 'milhoja/template' namespace
+        # Fetch template information
+        info = self.get_template()
 
-        # TODO Get last commit in 'template'
-        # TODO Try to fetch note from 'milhoja/context' namespace
-        # TODO Parse context from this note: old_context
+        # Get last context used to apply template
+        context = self.get_last_context()
 
-        # TODO Merge old_context and extra_context (priority to extra_context)
+        # Merge original context and extra_context (priority to extra_context)
+        context.update(extra_context)
 
-        # TODO Create temporary EMPTY worktree
+        # Create temporary EMPTY worktree
+        with TemporaryWorktree(self.repo, __worktree_name__) as worktree:
+            # Set HEAD to template branch
+            branch = worktree.repo.lookup_branch(__template_branch__)
+            worktree.repo.set_head(branch.name)
 
-        # TODO Move HEAD to template branch WITHOUT checkout
+            # Apply cookiecutter with merged context
+            # NOTE: cookiecutter has been patched to return generated context
+            _, context = cookiecutter(
+                info['src'], checkout, no_input,
+                extra_context=context,
+                replay=False,
+                overwrite_if_exists=True,
+                output_dir=worktree.path,
+                strip=True
+            )
 
-        # TODO Apply cookiecutter with merged context
-        # TODO Such in installation, cookiecutter MUST return a tuple with
-        #      context used
+            # Stage changes
+            worktree.repo.index.read()
+            worktree.repo.index.add_all()
+            worktree.repo.index.write()
+            tree = worktree.repo.index.write_tree()
 
-        # TODO Commit changes
+            # Create commit on
+            oid = worktree.repo.create_commit(
+                'HEAD',
+                worktree.repo.default_signature, worktree.repo.default_signature,
+                __commit_apply_message__,
+                tree,
+                [worktree.repo.head.target]
+            )
+            commit = worktree.repo.get(oid)
 
-        # TODO Create Git Note in 'milhoja/context' namespace with context from cc
+        # Make template branch ref to created commit
+        self.repo.lookup_branch(__template_branch__).set_target(commit.hex)
 
-        # TODO Attach this notes to last commit
+        # Create a object where we store template information
+        info = dict(
+            src=info['src'],
+            ref=checkout
+        )
 
-        # TODO Remove worktree (unlink + prune)
+        # Create notes with meta data (template + context)
+        self.create_notes(commit, info, context)
 
-        # TODO In self.path: merge template branch into HEAD
-        # NOTE Which kind of merge to do ?
-
-        # TODO Such as installation: what to do with conflict ?
-        #        -> Let user resolve ?
-        #        -> Raise an error after analysis ?
-        pass
+        # Let's merge our changes into HEAD
+        self.merge_template_branch(__commit_upgrade_message__)
