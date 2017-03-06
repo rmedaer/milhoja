@@ -20,9 +20,10 @@ __worktree_name__ = 'templating'
 __template_branch__ = 'template'
 __notes_template_ref__ = 'refs/notes/template'
 __notes_context_ref__ = 'refs/notes/context'
-__commit_apply_message__ = 'Apply template'
-__commit_install_message__ = 'Installed template'
-__commit_upgrade_message__ = 'Upgraded template'
+__commit_prepare_install_message__ = 'Prepared template installation'
+__commit_install_message__ = 'Installed template \'%s\''
+__commit_prepare_upgrade_message__ = 'Prepared template upgrade'
+__commit_upgrade_message__ = 'Upgraded template \'%s\''
 
 class TemporaryWorktree():
     def __init__(self, upstream, name, prune=True):
@@ -38,7 +39,6 @@ class TemporaryWorktree():
         self.prune = prune
 
     def __enter__(self):
-        print self.tmp
         self.obj = self.upstream.add_worktree(self.name, self.path)
         self.repo = Repository(self.obj.path)
         return self
@@ -193,7 +193,7 @@ class Milhoja(object):
             oid = worktree.repo.create_commit(
                 None,
                 worktree.repo.default_signature, worktree.repo.default_signature,
-                __commit_apply_message__,
+                __commit_prepare_install_message__,
                 tree,
                 []
             )
@@ -216,7 +216,7 @@ class Milhoja(object):
         self.create_notes(commit, info, context)
 
         # Let's merge our changes into HEAD
-        self.merge_template_branch(__commit_install_message__)
+        self.merge_template_branch(__commit_install_message__ % template)
 
 
     def upgrade(self, checkout='master', extra_context=None, no_input=False):
@@ -263,7 +263,7 @@ class Milhoja(object):
             oid = worktree.repo.create_commit(
                 'HEAD',
                 worktree.repo.default_signature, worktree.repo.default_signature,
-                __commit_apply_message__,
+                __commit_prepare_upgrade_message__,
                 tree,
                 [worktree.repo.head.target]
             )
@@ -282,4 +282,4 @@ class Milhoja(object):
         self.create_notes(commit, info, context)
 
         # Let's merge our changes into HEAD
-        self.merge_template_branch(__commit_upgrade_message__)
+        self.merge_template_branch(__commit_upgrade_message__ % info['src'])
