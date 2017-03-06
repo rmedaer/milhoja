@@ -86,7 +86,7 @@ class Milhoja(object):
         return self.repo.get(self.get_template_branch().target)
 
     def get_template(self):
-        commit = self.get_root_commit()
+        commit = self.get_last_commit()
         note = self.repo.lookup_note(commit.id.__str__(), __notes_template_ref__)
         return json.loads(note.message)
 
