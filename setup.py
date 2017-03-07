@@ -20,7 +20,7 @@ test_requirements = [
 
 setup(
     name='milhoja',
-    version='0.1.0',
+    version='0.1.1',
     description="Mixing Cookiecutter and Git to ends up sticking to your finger.",
     long_description=readme + '\n\n' + history,
     author="Raphael Medaer",
