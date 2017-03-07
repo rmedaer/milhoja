@@ -21,6 +21,7 @@ def main(ctx, c):
     ctx -- CLI context.
     c -- Path where to run milhoja
     """
+    ctx.obj = dict()
     ctx.obj['target'] = c
 
 @main.command()
