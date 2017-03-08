@@ -4,6 +4,18 @@
 Release History
 ===============
 
+0.2.0 (2017-03-08)
+------------------
+
+* Gathered Git notes (template and context namespaces) into
+  only one and unique template namespace.
+* Implemented error handling. Display nice errors on CLI.
+
+0.1.1 (2017-03-07)
+------------------
+
+* Fixed CLI context.
+
 0.1.0 (2017-03-06)
 ------------------
 
@@ -11,8 +23,3 @@ Release History
 * Implemented mechanism to install a template.
 * Implemented mechanism to upgrade a template.
 * Added command to show installed template.
-
-0.1.1 (2017-03-07)
-------------------
-
-* Fixed CLI context.

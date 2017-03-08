@@ -3,8 +3,10 @@
 import json
 import click
 from cookiecutter.cli import validate_extra_context
+from cookiecutter.exceptions import CookiecutterException
 from .milhoja import Milhoja # indeed ...
 from .utils import open_repository, open_or_init_repository
+from .errors import MilhojaException
 
 @click.group()
 @click.option(
@@ -27,14 +29,17 @@ def main(ctx, c):
 @main.command()
 @click.pass_context
 def show(ctx, **kwargs):
-    milhoja = Milhoja(open_repository(ctx.obj['target']))
-    info = milhoja.get_template()
-    context = milhoja.get_context()
+    try:
+        milhoja = Milhoja(open_repository(ctx.obj['target']))
+        template, checkout = milhoja.get_template()
+        context = milhoja.get_context()
 
-    click.echo('Template: %s' % info['src'])
-    click.echo('Checkout: %s' % info['ref'])
-    click.echo('Context:')
-    click.echo(json.dumps(context, indent=4, separators=(',', ': ')))
+        click.echo('Template: %s' % template)
+        click.echo('Checkout: %s' % checkout)
+        click.echo('Context:')
+        click.echo(json.dumps(context, indent=4, separators=(',', ': ')))
+    except (MilhojaException, CookiecutterException) as error:
+        ctx.fail(error.message)
 
 @main.command()
 @click.argument('template')
@@ -51,8 +56,11 @@ def show(ctx, **kwargs):
 )
 @click.pass_context
 def install(ctx, template, **kwargs):
-    milhoja = Milhoja(open_or_init_repository(ctx.obj['target']))
-    milhoja.install(template, **kwargs)
+    try:
+        milhoja = Milhoja(open_or_init_repository(ctx.obj['target']))
+        milhoja.install(template, **kwargs)
+    except (MilhojaException, CookiecutterException) as error:
+        ctx.fail(error.message)
 
 @main.command()
 @click.argument(u'extra_context', nargs=-1, callback=validate_extra_context)
@@ -68,5 +76,8 @@ def install(ctx, template, **kwargs):
 )
 @click.pass_context
 def upgrade(ctx, **kwargs):
-    milhoja = Milhoja(open_repository(ctx.obj['target']))
-    milhoja.upgrade(**kwargs)
+    try:
+        milhoja = Milhoja(open_repository(ctx.obj['target']))
+        milhoja.upgrade(**kwargs)
+    except (MilhojaException, CookiecutterException) as error:
+        ctx.fail(error.message)

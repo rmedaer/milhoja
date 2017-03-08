@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import six
 import json
 import shutil
 import tempfile
@@ -15,6 +16,11 @@ from pygit2 import (
     GIT_SORT_REVERSE
 )
 from cookiecutter.main import cookiecutter
+from .errors import (
+    TemplateConflictException,
+    WorktreeConflictException,
+    TemplateNotFoundException
+)
 
 __worktree_name__ = 'templating'
 __template_branch__ = 'template'
@@ -24,11 +30,14 @@ __commit_prepare_install_message__ = 'Prepared template installation'
 __commit_install_message__ = 'Installed template \'%s\''
 __commit_prepare_upgrade_message__ = 'Prepared template upgrade'
 __commit_upgrade_message__ = 'Upgraded template \'%s\''
+__key_source__ = 'src'
+__key_reference__ = 'ref'
+__key_context__ = 'ctx'
 
 class TemporaryWorktree():
     def __init__(self, upstream, name, prune=True):
         if name in upstream.list_worktrees():
-            raise Exception('Worktree %s already exists' % name)
+            raise WorktreeConflictException(name)
 
         self.upstream = upstream
         self.name = name
@@ -72,7 +81,7 @@ class Milhoja(object):
         branch = self.repo.lookup_branch(__template_branch__)
 
         if branch is None:
-            raise Exception('Template branch not found')
+            raise TemplateNotFoundException()
 
         return branch
 
@@ -88,37 +97,34 @@ class Milhoja(object):
     def get_template(self):
         commit = self.get_last_commit()
         note = self.repo.lookup_note(commit.id.__str__(), __notes_template_ref__)
-        return json.loads(note.message)
+
+        info = json.loads(note.message)
+        assert isinstance(info[__key_source__], six.string_types)
+        assert isinstance(info[__key_reference__], six.string_types)
+
+        return info[__key_source__], info[__key_reference__]
 
     def get_context(self):
-        # An alias of "get_last_context"
-        return self.get_last_context()
-
-    def get_last_context(self):
         commit = self.get_last_commit()
-        note = self.repo.lookup_note(commit.id.__str__(), __notes_context_ref__)
+        note = self.repo.lookup_note(commit.id.__str__(), __notes_template_ref__)
 
-        context = json.loads(note.message)
-        assert isinstance(context, dict)
+        info = json.loads(note.message)
+        assert isinstance(info[__key_context__], dict)
 
-        return context
+        return info[__key_context__]
 
-    def create_notes(self, commit, info, context):
-        # Create Git Note with serialized template references
+    def create_note(self, commit, source, reference, context):
+        # Create Git Note with serialized template references and context
         self.repo.create_note(
-            json.dumps(info),
+            json.dumps({
+                __key_source__: source,
+                __key_reference__: reference,
+                __key_context__: context
+            }),
             self.repo.default_signature,
             self.repo.default_signature,
             commit.hex,
             __notes_template_ref__
-        )
-        # Create Git Note with serialized context
-        self.repo.create_note(
-            json.dumps(context),
-            self.repo.default_signature,
-            self.repo.default_signature,
-            commit.hex,
-            __notes_context_ref__
         )
 
     def merge_template_branch(self, message):
@@ -166,10 +172,7 @@ class Milhoja(object):
 
         # Assert template branch doesn't exist or raise conflict
         if self.is_installed():
-            raise Exception('Template already installed')
-
-        if __worktree_name__ in self.repo.list_worktrees():
-            raise Exception('Worktree %s already exists' % __worktree_name__)
+            raise TemplateConflictException()
 
         # Create temporary worktree
         with TemporaryWorktree(self.repo, __worktree_name__) as worktree:
@@ -206,14 +209,8 @@ class Milhoja(object):
             # Optional ? Obviously the tmp worktree will be removed in __exit__
             worktree.repo.set_head(branch.name)
 
-        # Create a object where we store template information
-        info = dict(
-            src=template,
-            ref=checkout
-        )
-
         # Create notes with meta data (template + context)
-        self.create_notes(commit, info, context)
+        self.create_note(commit, template, checkout, context)
 
         # Let's merge our changes into HEAD
         self.merge_template_branch(__commit_install_message__ % template)
@@ -225,13 +222,13 @@ class Milhoja(object):
 
         # Assert template branch exist or raise an error
         if not self.is_installed():
-            raise Exception('Not any template installed')
+            raise TemplateNotFoundException()
 
         # Fetch template information
-        info = self.get_template()
+        template, _ = self.get_template()
 
         # Get last context used to apply template
-        context = self.get_last_context()
+        context = self.get_context()
 
         # Merge original context and extra_context (priority to extra_context)
         context.update(extra_context)
@@ -245,7 +242,7 @@ class Milhoja(object):
             # Apply cookiecutter with merged context
             # NOTE: cookiecutter has been patched to return generated context
             _, context = cookiecutter(
-                info['src'], checkout, no_input,
+                template, checkout, no_input,
                 extra_context=context,
                 replay=False,
                 overwrite_if_exists=True,
@@ -272,14 +269,8 @@ class Milhoja(object):
         # Make template branch ref to created commit
         self.repo.lookup_branch(__template_branch__).set_target(commit.hex)
 
-        # Create a object where we store template information
-        info = dict(
-            src=info['src'],
-            ref=checkout
-        )
-
         # Create notes with meta data (template + context)
-        self.create_notes(commit, info, context)
+        self.create_note(commit, template, checkout, context)
 
         # Let's merge our changes into HEAD
-        self.merge_template_branch(__commit_upgrade_message__ % info['src'])
+        self.merge_template_branch(__commit_upgrade_message__ % template)
