@@ -5,6 +5,10 @@ from pygit2 import (
     discover_repository,
     init_repository
 )
+from .errors import (
+    RepositoryNotFoundException,
+    RepositoryInitializationException
+)
 
 __commit_init_message__ = 'Initialized repository'
 
@@ -12,7 +16,7 @@ def open_repository(path):
     try:
         return Repository(discover_repository(path))
     except:
-        raise Exception('Failed to open Git repository')
+        raise RepositoryNotFoundException()
 
 def open_or_init_repository(path):
     try:
@@ -31,4 +35,4 @@ def open_or_init_repository(path):
         )
         return repo
     except:
-        raise Exception('Failed to initialize Git repository')
+        raise RepositoryInitializationException()

@@ -16,6 +16,11 @@ from pygit2 import (
     GIT_SORT_REVERSE
 )
 from cookiecutter.main import cookiecutter
+from .errors import (
+    TemplateConflictException,
+    WorktreeConflictException,
+    TemplateNotFoundException
+)
 
 __worktree_name__ = 'templating'
 __template_branch__ = 'template'
@@ -32,7 +37,7 @@ __key_context__ = 'ctx'
 class TemporaryWorktree():
     def __init__(self, upstream, name, prune=True):
         if name in upstream.list_worktrees():
-            raise Exception('Worktree %s already exists' % name)
+            raise WorktreeConflictException(name)
 
         self.upstream = upstream
         self.name = name
@@ -76,7 +81,7 @@ class Milhoja(object):
         branch = self.repo.lookup_branch(__template_branch__)
 
         if branch is None:
-            raise Exception('Template branch not found')
+            raise TemplateNotFoundException()
 
         return branch
 
@@ -167,10 +172,7 @@ class Milhoja(object):
 
         # Assert template branch doesn't exist or raise conflict
         if self.is_installed():
-            raise Exception('Template already installed')
-
-        if __worktree_name__ in self.repo.list_worktrees():
-            raise Exception('Worktree %s already exists' % __worktree_name__)
+            raise TemplateConflictException()
 
         # Create temporary worktree
         with TemporaryWorktree(self.repo, __worktree_name__) as worktree:
@@ -220,7 +222,7 @@ class Milhoja(object):
 
         # Assert template branch exist or raise an error
         if not self.is_installed():
-            raise Exception('Not any template installed')
+            raise TemplateNotFoundException()
 
         # Fetch template information
         template, _ = self.get_template()
