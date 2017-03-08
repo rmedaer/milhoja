@@ -28,11 +28,11 @@ def main(ctx, c):
 @click.pass_context
 def show(ctx, **kwargs):
     milhoja = Milhoja(open_repository(ctx.obj['target']))
-    info = milhoja.get_template()
+    template, checkout = milhoja.get_template()
     context = milhoja.get_context()
 
-    click.echo('Template: %s' % info['src'])
-    click.echo('Checkout: %s' % info['ref'])
+    click.echo('Template: %s' % template)
+    click.echo('Checkout: %s' % checkout)
     click.echo('Context:')
     click.echo(json.dumps(context, indent=4, separators=(',', ': ')))
 
