@@ -1,0 +1,37 @@
+Source: python-milhoja
+Section: misc
+Priority: optional
+Maintainer: Raphael Medaer <raphael@medaer.me>
+Build-Depends: debhelper (>= 9),
+               dh-python,
+               python-all,
+               python-click,
+               python-setuptools
+Standards-Version: 3.9.5
+Homepage: https://github.com/rmedaer/milhoja
+Vcs-Git: git://github.com/rmeader/deb-milhoja
+Vcs-Browser: https://github.com/rmedaer/deb-milhoja
+
+Package: milhoja
+Architecture: all
+Depends: ${misc:Depends},
+         python-milhoja
+Description: Manage project templating with Git
+ Milhoja is a tool in top of Cookiecutter which maintains
+ directory templating with Git.
+ .
+ This package contains Milhoja command-line utility.
+
+Package: python-milhoja
+Architecture: all
+Depends: ${misc:Depends},
+         python-all,
+         python-click,
+         python-cookiecutter (= 1.5.0-1sid1),
+         python-pygit2 (= 0.25.0-0.1sid2)
+Description: Manage project templating with Git (Python 2 module)
+ Milhoja is a tool in top of Cookiecutter which maintains
+ directory templating with Git.
+ .
+ It has been originally developed to provide "upgrade" feature
+ to Cookiecutter.
