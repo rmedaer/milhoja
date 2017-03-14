@@ -63,3 +63,14 @@ class RepositoryInitializationException(MilhojaException):
         Initializing the exception with small message.
         """
         super(RepositoryInitializationException, self).__init__('Failed to initialize Git repository')
+
+class RepositoryEmptyException(MilhojaException):
+    """
+    Error raised when Git repository is unborn.
+    """
+
+    def __init__(self):
+        """
+        Initializing the exception with small message.
+        """
+        super(RepositoryEmptyException, self).__init__('Target repository is empty')
