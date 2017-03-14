@@ -19,6 +19,7 @@ from cookiecutter.main import cookiecutter
 from .errors import (
     TemplateConflictException,
     WorktreeConflictException,
+    WorktreeException,
     TemplateNotFoundException,
     RepositoryEmptyException
 )
@@ -52,7 +53,11 @@ class TemporaryWorktree():
         if self.upstream.head_is_unborn:
             raise RepositoryEmptyException()
 
-        self.obj = self.upstream.add_worktree(self.name, self.path)
+        try:
+            self.obj = self.upstream.add_worktree(self.name, self.path)
+        except ValueError:
+            raise WorktreeException(self.name, self.path)
+
         self.repo = Repository(self.obj.path)
         return self
 

@@ -17,6 +17,16 @@ class TemplateConflictException(MilhojaException):
         """
         super(TemplateConflictException, self).__init__('Template already installed')
 
+class WorktreeException(MilhojaException):
+    """
+    Error raised when worktree could not be initialized.
+    """
+
+    def __init__(self, worktree_name, worktree_path):
+        super(WorktreeException, self).__init__(
+            'Worktree \'%s\' could not be initialized in path \'%s\'' % (worktree_name, worktree_path)
+        )
+
 class WorktreeConflictException(MilhojaException):
     """
     Error raised when worktree already exist.
