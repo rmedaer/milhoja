@@ -1,3 +1,12 @@
+python-milhoja (0.3.1) unstable; urgency=medium
+
+  * Fixed upgrade: remove deleted files.
+  * Added error handling when we cannot init worktree.
+  * Added error handling when target repository is empty.
+  * Fixed VCS references in Debian control file.
+
+ -- Raphael Medaer <raphael@medaer.me>  Wed, 15 Mar 2017 11:24:32 +0100
+
 python-milhoja (0.3.0) unstable; urgency=low
 
   * Initialized Debian releases.
