@@ -37,7 +37,7 @@ __key_reference__ = 'ref'
 __key_context__ = 'ctx'
 
 class TemporaryWorktree():
-    def __init__(self, upstream, name, prune=True):
+    def __init__(self, upstream, name, empty=False, prune=True):
         if name in upstream.list_worktrees():
             raise WorktreeConflictException(name)
 
@@ -47,6 +47,7 @@ class TemporaryWorktree():
         self.path = os.path.join(self.tmp, name)
         self.obj = None
         self.repo = None
+        self.empty = empty
         self.prune = prune
 
     def __enter__(self):
@@ -59,6 +60,11 @@ class TemporaryWorktree():
             raise WorktreeException(self.name, self.path)
 
         self.repo = Repository(self.obj.path)
+
+        if self.empty:
+            for entry in self.repo[self.repo.head.target].tree:
+                os.remove(os.path.join(self.path, entry.name))
+
         return self
 
     def __exit__(self, type, value, traceback):
@@ -151,15 +157,15 @@ class Milhoja(object):
 
         elif analysis & GIT_MERGE_ANALYSIS_FASTFORWARD or analysis & GIT_MERGE_ANALYSIS_NORMAL:
             # Let's merge template changes.
-            index = self.repo.merge_commits(self.repo.head.target, branch.target)
+            self.repo.merge(branch.target)
 
             # TODO What to do with conflict ?
             #        -> Let user resolve ?
             #        -> Raise an error after analysis ?
-            assert index.conflicts is None
+            assert self.repo.index.conflicts is None
 
             # Write index
-            tree = index.write_tree(self.repo)
+            tree = self.repo.index.write_tree()
 
             # Commit it
             self.repo.create_commit(
@@ -170,6 +176,9 @@ class Milhoja(object):
                 tree,
                 [self.repo.head.target, branch.target]
             )
+
+            # Clean up repository state
+            self.repo.state_cleanup()
 
             self.repo.checkout('HEAD')
         else:
@@ -184,7 +193,7 @@ class Milhoja(object):
             raise TemplateConflictException()
 
         # Create temporary worktree
-        with TemporaryWorktree(self.repo, __worktree_name__) as worktree:
+        with TemporaryWorktree(self.repo, __worktree_name__, empty=True) as worktree:
             # Apply cookiecutter
             # NOTE: cookiecutter has been patched to return generated context
             _, context = cookiecutter(
@@ -243,7 +252,7 @@ class Milhoja(object):
         context.update(extra_context)
 
         # Create temporary EMPTY worktree
-        with TemporaryWorktree(self.repo, __worktree_name__) as worktree:
+        with TemporaryWorktree(self.repo, __worktree_name__, empty=True) as worktree:
             # Set HEAD to template branch
             branch = worktree.repo.lookup_branch(__template_branch__)
             worktree.repo.set_head(branch.name)
