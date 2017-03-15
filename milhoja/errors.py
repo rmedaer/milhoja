@@ -17,6 +17,16 @@ class TemplateConflictException(MilhojaException):
         """
         super(TemplateConflictException, self).__init__('Template already installed')
 
+class WorktreeException(MilhojaException):
+    """
+    Error raised when worktree could not be initialized.
+    """
+
+    def __init__(self, worktree_name, worktree_path):
+        super(WorktreeException, self).__init__(
+            'Worktree \'%s\' could not be initialized in path \'%s\'' % (worktree_name, worktree_path)
+        )
+
 class WorktreeConflictException(MilhojaException):
     """
     Error raised when worktree already exist.
@@ -63,3 +73,14 @@ class RepositoryInitializationException(MilhojaException):
         Initializing the exception with small message.
         """
         super(RepositoryInitializationException, self).__init__('Failed to initialize Git repository')
+
+class RepositoryEmptyException(MilhojaException):
+    """
+    Error raised when Git repository is unborn.
+    """
+
+    def __init__(self):
+        """
+        Initializing the exception with small message.
+        """
+        super(RepositoryEmptyException, self).__init__('Target repository is empty')

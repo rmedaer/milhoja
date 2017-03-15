@@ -4,6 +4,13 @@
 Release History
 ===============
 
+0.3.1 (2017-03-15)
+------------------
+
+* Fixed upgrade: remove deleted files.
+* Added error handling when we cannot init worktree.
+* Added error handling when target repository is empty.
+
 0.3.0 (2017-03-09)
 ------------------
 

@@ -9,12 +9,13 @@ Build-Depends: debhelper (>= 9),
                python-setuptools
 Standards-Version: 3.9.5
 Homepage: https://github.com/rmedaer/milhoja
-Vcs-Git: git://github.com/rmeader/deb-milhoja
-Vcs-Browser: https://github.com/rmedaer/deb-milhoja
+Vcs-Git: git://github.com/rmeader/milhoja
+Vcs-Browser: https://github.com/rmedaer/milhoja
 
 Package: milhoja
 Architecture: all
 Depends: ${misc:Depends},
+         ${python:Depends},
          python-milhoja
 Description: Manage project templating with Git
  Milhoja is a tool in top of Cookiecutter which maintains
@@ -25,7 +26,7 @@ Description: Manage project templating with Git
 Package: python-milhoja
 Architecture: all
 Depends: ${misc:Depends},
-         python-all,
+         ${python:Depends},
          python-click,
          python-cookiecutter (= 1.5.0-1sid1),
          python-pygit2 (= 0.25.0-0.1sid2)
