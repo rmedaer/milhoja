@@ -61,9 +61,13 @@ class TemporaryWorktree():
 
         self.repo = Repository(self.obj.path)
 
+        # If the worktree needs cleanup
         if self.empty:
             for entry in self.repo[self.repo.head.target].tree:
-                os.remove(os.path.join(self.path, entry.name))
+                if os.path.isdir(os.path.join(self.path, entry.name)):
+                    shutil.rmtree(os.path.join(self.path, entry.name))
+                else:
+                    os.remove(os.path.join(self.path, entry.name))
 
         return self
 
