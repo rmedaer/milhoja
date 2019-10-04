@@ -21,7 +21,7 @@ class WorktreeException(MilhojaException):
 
     def __init__(self, worktree_name, worktree_path):
         super().__init__(
-            'Worktree \'{worktree_name}\' could not be initialized in path \'{worktree_path}\''
+           f'Worktree \'{worktree_name}\' could not be initialized in path \'{worktree_path}\''
         )
 
 
