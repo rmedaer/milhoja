@@ -4,41 +4,46 @@
 
 [![image](https://img.shields.io/travis/rmedaer/milhoja.svg)](https://travis-ci.org/rmedaer/milhoja)
 
-[![Documentation Status](https://readthedocs.org/projects/milhoja/badge/?version=latest)](https://milhoja.readthedocs.io/en/latest/?badge=latest)
-
-[![Updates](https://pyup.io/repos/github/rmedaer/milhoja/shield.svg)](https://pyup.io/repos/github/rmedaer/milhoja/)
-
 Milhoja is a tool in top of [Cookiecutter](https://github.com/audreyr/cookiecutter) which maintains
 directory templating with Git. The first goal of Milhoja is to provide *upgrade* feature to [Cookiecutter](https://github.com/audreyr/cookiecutter).
 
-## How to ?
+## Usage
 
 Install a [Cookiecutter](https://github.com/audreyr/cookiecutter)
 template on current directory:
 
+    ```bash
     milhoja install <your cookiecutter>
+    ```
 
 Specify a target reference (branch, tag, commit):
 
+    ```bash
     milhoja install -c v1.0.0 <your cookiecutter>
+    ```
 
 Show installed template:
 
+    ```bash
     milhoja show
+    ```
 
-Install a [Cookiecutter](https://github.com/audreyr/cookiecutter)
-template on your existing Git repository:
+Install a [Cookiecutter](https://github.com/audreyr/cookiecutter) template on your existing Git repository:
 
+    ```bash
     milhoja -C <your repo path> install <your cookiecutter>
+    ```
 
 Upgrade your repository with last version of template:
 
+    ```bash
     milhoja -C <your repo path> upgrade
+    ```
 
 ## Credits
 
-Code written by Raphael Medaer \<<raphael@medaer.me>\> from an original
-idea of Abdó Roig-Maranges \<<abdo.roig@gmail.com>\>
+[Original code](https://github.com/rmedaer/milhoja) written by [Raphael Medaer](https://github.com/rmedaer) from an [original
+idea](https://github.com/cookiecutter/cookiecutter/issues/784) of [Abdó Roig-Maranges](https://github.com/aroig).
 
 ## License
 
