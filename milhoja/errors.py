@@ -46,10 +46,10 @@ class TemplateNotFoundException(MilhojaException):
         super().__init__('Template could not be found')
 
 
-class RepositoryNotFoundException(MilhojaException):
+class RepositoryEmptyException(MilhojaException):
     """
-    Error raised when Git repository could not be found.
+    Error raised when Git repository is unborn.
     """
 
     def __init__(self):
-        super().__init__('Could not find Git repository')
+        super().__init__('Target repository is empty')

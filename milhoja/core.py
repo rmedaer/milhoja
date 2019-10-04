@@ -9,17 +9,15 @@ from pygit2 import (
     Repository,
     GIT_MERGE_ANALYSIS_UP_TO_DATE,
     GIT_MERGE_ANALYSIS_FASTFORWARD,
-    GIT_MERGE_ANALYSIS_NORMAL,
-    GIT_SORT_TOPOLOGICAL,
-    GIT_SORT_REVERSE
+    GIT_MERGE_ANALYSIS_NORMAL
 )
 from cookiecutter.main import cookiecutter
 from milhoja.errors import (
+    RepositoryEmptyException,
     TemplateConflictException,
-    WorktreeConflictException,
-    WorktreeException,
     TemplateNotFoundException,
-    RepositoryEmptyException
+    WorktreeConflictException,
+    WorktreeException
 )
 
 __worktree_name__ = 'templating'
@@ -105,12 +103,6 @@ class Milhoja(object):
             raise TemplateNotFoundException()
 
         return branch
-
-    def get_root_commit(self):
-        return self.repo.walk(
-            self.get_template_branch().target,
-            GIT_SORT_TOPOLOGICAL | GIT_SORT_REVERSE
-        ).next()
 
     def get_last_commit(self):
         return self.repo.get(self.get_template_branch().target)
