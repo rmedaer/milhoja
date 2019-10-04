@@ -19,16 +19,16 @@ logger.addHandler(logging.StreamHandler())
 
 @click.group()
 @click.option(
-    u'-C',
-    default=u'.',
-    help=u'Run as if milhoja was started in <path> instead of the current working directory.',
+    '-C',
+    default='.',
+    help='Run as if milhoja was started in <path> instead of the current working directory.',
     type=click.Path()
 )
 @click.option(
-    u'--verbose',
+    '--verbose',
     default=False,
     is_flag=True,
-    help=u'Enables the debug logging.'
+    help='Enables the debug logging.'
 )
 @click.pass_context
 def main(ctx, c, verbose):
@@ -45,10 +45,8 @@ def main(ctx, c, verbose):
         'verbose': verbose
     })
 
-    if verbose:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
+    level = logging.DEBUG if verbose else logging.INFO
+    logger.setLevel(level)
 
 
 @main.command()
@@ -59,8 +57,8 @@ def show(ctx, **kwargs):
         template, checkout = milhoja.get_template()
         context = milhoja.get_context()
 
-        logger.info('Template: %s' % template)
-        logger.info('Checkout: %s' % checkout)
+        logger.info(f'Template: {template}')
+        logger.info(f'Checkout: %{checkout}')
         logger.info('Context:')
         logger.info(json.dumps(context, indent=4, separators=(',', ': ')))
     except (MilhojaException, CookiecutterException) as error:
@@ -69,16 +67,16 @@ def show(ctx, **kwargs):
 
 @main.command()
 @click.argument('template')
-@click.argument(u'extra_context', nargs=-1, callback=validate_extra_context)
+@click.argument('extra_context', nargs=-1, callback=validate_extra_context)
 @click.option(
-    u'-c', u'--checkout',
-    help=u'branch, tag or commit to checkout',
-    default=u'master'
+    '-c', '--checkout',
+    help='branch, tag or commit to checkout',
+    default='master'
 )
 @click.option(
-    u'--no-input', is_flag=True,
-    help=u'Do not prompt for parameters and only use cookiecutter.json '
-         u'file content',
+    '--no-input', is_flag=True,
+    help='Do not prompt for parameters and only use cookiecutter.json '
+         'file content',
 )
 @click.pass_context
 def install(ctx, template, **kwargs):
@@ -90,16 +88,16 @@ def install(ctx, template, **kwargs):
 
 
 @main.command()
-@click.argument(u'extra_context', nargs=-1, callback=validate_extra_context)
+@click.argument('extra_context', nargs=-1, callback=validate_extra_context)
 @click.option(
-    u'-c', u'--checkout',
-    help=u'branch, tag or commit to checkout',
-    default=u'master'
+    '-c', '--checkout',
+    help='branch, tag or commit to checkout',
+    default='master'
 )
 @click.option(
-    u'--no-input', is_flag=True,
-    help=u'Do not prompt for parameters and only use cookiecutter.json '
-         u'file content',
+    '--no-input', is_flag=True,
+    help='Do not prompt for parameters and only use cookiecutter.json '
+         'file content',
 )
 @click.pass_context
 def upgrade(ctx, **kwargs):

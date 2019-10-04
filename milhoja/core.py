@@ -82,11 +82,7 @@ class TemporaryWorktree():
         if self.obj is not None:
             self.obj.prune(True)
 
-        # Remove worktree ref in upstream repository
-        try:
-            self.upstream.lookup_branch(self.name).delete()
-        except Exception:
-            pass
+        self.upstream.lookup_branch(self.name).delete()
 
 
 class Milhoja(object):
