@@ -77,9 +77,8 @@ class TemporaryWorktree:
 
 class Battenberg:
 
-    def __init__(self, repo: Repository, context_file: str = '.cookiecutter.json'):
+    def __init__(self, repo: Repository):
         self.repo = repo
-        self.context_file = context_file
 
     def is_installed(self) -> bool:
         return TEMPLATE_BRANCH in self.repo.listall_branches()
@@ -88,21 +87,33 @@ class Battenberg:
         context = self.get_context()
         return context['_template']
 
-    def get_context(self) -> Dict[str, Any]:
-        with open(os.path.join(self.repo.workdir, self.context_file)) as f:
+    def get_context(self, context_file: str) -> Dict[str, Any]:
+        with open(os.path.join(self.repo.workdir, context_file)) as f:
             return json.load(f)
 
-    def merge_template_branch(self, message: str):
-        # Lookup template branch
-        branch = self.repo.lookup_branch(TEMPLATE_BRANCH)
+    def resolve_merge_target(self, merge_target: str = None):
+        if merge_target is None:
+            # Default to merging into the HEAD.
+            return self.repo.head.target
+        
+        # Assume this is a valid commit or branch identifier.
+        return merge_target
 
-        # Analyze merge between template branch and HEAD
-        analysis, _ = self.repo.merge_analysis(branch.target)
+    def merge_template_branch(self, message: str, merge_target: str = None):
+        branch = self.repo.lookup_branch(TEMPLATE_BRANCH)
+        merge_target_ref = self.resolve_merge_target(merge_target)
+
+        # Analyze merge between template branch and our merge target.
+        analysis, _ = self.repo.merge_analysis(branch.target, our_ref=merge_target_ref)
 
         if analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE:
             logger.info('The branch is already up to date, no need to merge.')
 
         elif analysis & GIT_MERGE_ANALYSIS_FASTFORWARD or analysis & GIT_MERGE_ANALYSIS_NORMAL:
+
+            # Ensure we're merging into the right
+            self.repo.checkout(merge_target_ref)
+
             # Let's merge template changes using --allow-unrelated-histories. This will allow
             # the disjoint histories to be merged successfully. If you want to manually replicate
             # this option please run:
@@ -140,7 +151,8 @@ class Battenberg:
         else:
             raise AssertionError(f'Unknown merge analysis result: {analysis}')
 
-    def install(self, template, checkout='master', extra_context=None, no_input=False):
+    def install(self, template: str, checkout: str = 'master', extra_context: Dict = None,
+                no_input: bool = False):
         if extra_context is None:
             extra_context = {}
 
@@ -186,7 +198,11 @@ class Battenberg:
         # Let's merge our changes into HEAD
         self.merge_template_branch(f'Installed template \'{template}\'')
 
-    def upgrade(self, checkout='master', extra_context=None, no_input=False):
+    def upgrade(self, checkout: str = 'master', extra_context: Dict = None, no_input: bool = False,
+                merge_target: str = None, context_file: str = '.cookiecutter.json'):
+        """
+
+        """
         if extra_context is None:
             extra_context = {}
 
@@ -199,7 +215,7 @@ class Battenberg:
         logger.debug(f'Found template: {template}')
 
         # Get last context used to apply template
-        context = self.get_context()
+        context = self.get_context(context_file)
         logger.debug(f'Found context: {context}')
 
         # Merge original context and extra_context (priority to extra_context)
@@ -243,4 +259,4 @@ class Battenberg:
         self.repo.lookup_branch(TEMPLATE_BRANCH).set_target(commit.hex)
 
         # Let's merge our changes into HEAD
-        self.merge_template_branch(f'Upgraded template \'{template}\'')
+        self.merge_template_branch(f'Upgraded template \'{template}\'', merge_target)

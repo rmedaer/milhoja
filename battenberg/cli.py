@@ -22,15 +22,9 @@ logger.addHandler(handler)
 
 @click.group()
 @click.option(
-    '-C',
+    '-O',
     default='.',
-    help='Run as if battenberg was started in <path> instead of the current working directory.',
-    type=click.Path()
-)
-@click.option(
-    '--context-file',
-    default='.cookiecutter.json',
-    help='Path where we can find the output of the cookiecutter template context',
+    help='Direct the output of battenberg to this path instead of the current working directory.',
     type=click.Path()
 )
 @click.option(
@@ -40,19 +34,19 @@ logger.addHandler(handler)
     help='Enables the debug logging.'
 )
 @click.pass_context
-def main(ctx, c, context_file, verbose):
-    """Script entry point for Battenberg commands.
-
+def main(ctx, o, verbose):
+    """
+    \f
+    
+    Script entry point for Battenberg commands.
     Arguments:
-    ctx -- CLI context.
-    c -- Path where to run battenberg
-    context_file -- Path where we can find the output of the cookiecutter template context
-    verbose -- Enables debug logging
+        ctx -- CLI context.
+        o -- Path where to output battenberg to.
+        verbose -- Enables debug logging
     """
     ctx.obj = dict()
     ctx.obj.update({
-        'context_file': context_file,
-        'target': c,
+        'target': o,
         'verbose': verbose
     })
 
@@ -61,26 +55,10 @@ def main(ctx, c, context_file, verbose):
 
 
 @main.command()
-@click.pass_context
-def show(ctx, **kwargs):
-    try:
-        battenberg = Battenberg(open_repository(ctx.obj['target']), ctx.obj['context_file'])
-        template, checkout = battenberg.get_template()
-        context = battenberg.get_context()
-
-        logger.info(f'Template: {template}')
-        logger.info(f'Checkout: %{checkout}')
-        logger.info('Context:')
-        logger.info(json.dumps(context, indent=4, separators=(',', ': ')))
-    except (BattenbergException, CookiecutterException) as error:
-        raise click.ClickException from error
-
-
-@main.command()
 @click.argument('template')
 @click.argument('extra_context', nargs=-1, callback=validate_extra_context)
 @click.option(
-    '-c', '--checkout',
+    '-c',
     help='branch, tag or commit to checkout',
     default='master'
 )
@@ -91,7 +69,7 @@ def show(ctx, **kwargs):
 @click.pass_context
 def install(ctx, template, **kwargs):
     try:
-        battenberg = Battenberg(open_or_init_repository(ctx.obj['target']), ctx.obj['context_file'])
+        battenberg = Battenberg(open_or_init_repository(ctx.obj['target']))
         battenberg.install(template, **kwargs)
     except (BattenbergException, CookiecutterException) as error:
         raise click.ClickException from error
@@ -100,9 +78,20 @@ def install(ctx, template, **kwargs):
 @main.command()
 @click.argument('extra_context', nargs=-1, callback=validate_extra_context)
 @click.option(
-    '-c', '--checkout',
+    '-c',
     help='branch, tag or commit to checkout',
     default='master'
+)
+@click.option(
+    '--merge-target',
+    help='A branch that the upgrade should be merged into.',
+    default=None
+)
+@click.option(
+    '--context-file',
+    default='.cookiecutter.json',
+    help='Path where we can find the output of the cookiecutter template context',
+    type=click.Path()
 )
 @click.option(
     '--no-input', is_flag=True,
@@ -112,7 +101,7 @@ def install(ctx, template, **kwargs):
 @click.pass_context
 def upgrade(ctx, **kwargs):
     try:
-        battenberg = Battenberg(open_repository(ctx.obj['target']), ctx.obj['context_file'])
+        battenberg = Battenberg(open_repository(ctx.obj['target']))
         battenberg.upgrade(**kwargs)
     except (BattenbergException, CookiecutterException) as error:
         raise click.ClickException from error
