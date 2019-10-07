@@ -28,22 +28,30 @@ logger.addHandler(handler)
     type=click.Path()
 )
 @click.option(
+    '--context-file',
+    default='.cookiecutter.json',
+    help='Path where we can find the output of the cookiecutter template context',
+    type=click.Path()
+)
+@click.option(
     '--verbose',
     default=False,
     is_flag=True,
     help='Enables the debug logging.'
 )
 @click.pass_context
-def main(ctx, c, verbose):
+def main(ctx, c, context_file, verbose):
     """Script entry point for Milhoja commands.
 
     Arguments:
     ctx -- CLI context.
     c -- Path where to run milhoja
+    context_file -- Path where we can find the output of the cookiecutter template context
     verbose -- Enables debug logging
     """
     ctx.obj = dict()
     ctx.obj.update({
+        'context_file': context_file,
         'target': c,
         'verbose': verbose
     })
@@ -56,7 +64,7 @@ def main(ctx, c, verbose):
 @click.pass_context
 def show(ctx, **kwargs):
     try:
-        milhoja = Milhoja(open_repository(ctx.obj['target']))
+        milhoja = Milhoja(open_repository(ctx.obj['target']), ctx.obj['context_file'])
         template, checkout = milhoja.get_template()
         context = milhoja.get_context()
 
@@ -78,13 +86,12 @@ def show(ctx, **kwargs):
 )
 @click.option(
     '--no-input', is_flag=True,
-    help='Do not prompt for parameters and only use cookiecutter.json '
-         'file content',
+    help='Do not prompt for parameters and only use cookiecutter.json file content',
 )
 @click.pass_context
 def install(ctx, template, **kwargs):
     try:
-        milhoja = Milhoja(open_or_init_repository(ctx.obj['target']))
+        milhoja = Milhoja(open_or_init_repository(ctx.obj['target']), ctx.obj['context_file'])
         milhoja.install(template, **kwargs)
     except (MilhojaException, CookiecutterException) as error:
         raise click.ClickException from error
@@ -105,7 +112,7 @@ def install(ctx, template, **kwargs):
 @click.pass_context
 def upgrade(ctx, **kwargs):
     try:
-        milhoja = Milhoja(open_repository(ctx.obj['target']))
+        milhoja = Milhoja(open_repository(ctx.obj['target']), ctx.obj['context_file'])
         milhoja.upgrade(**kwargs)
     except (MilhojaException, CookiecutterException) as error:
         raise click.ClickException from error
