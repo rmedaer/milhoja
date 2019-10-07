@@ -106,7 +106,3 @@ def upgrade(ctx, **kwargs):
         milhoja.upgrade(**kwargs)
     except (MilhojaException, CookiecutterException) as error:
         raise click.ClickException from error
-
-
-if __name__ == '__main__':
-    main()

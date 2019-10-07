@@ -40,6 +40,35 @@ Upgrade your repository with last version of template:
     milhoja -C <your repo path> upgrade
     ```
 
+## Development
+
+To get set up run:
+
+    ```bash
+    python3 -m venv env
+    source env/bin/activate
+
+    # Install in editable mode so you get the updates propagated.
+    pip install -e .
+
+    # If you want to be able to run tests & linting install via:
+    pip install -e ".[dev]"
+    ```
+
+Then to actually perform any operations just use the `milhoja` command which should now be on your `$PATH`.
+
+To run tests:
+
+    ```bash
+    pytest
+    ```
+
+To run linting:
+
+    ```bash
+    flake8 --config flake8.cfg
+    ```
+
 ## Credits
 
 [Original code](https://github.com/rmedaer/milhoja) written by [Raphael Medaer](https://github.com/rmedaer) from an [original
