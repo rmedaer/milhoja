@@ -59,21 +59,6 @@ should be used to resolve any conflicts between the upstream template and the sp
 
 *This shows the repo structure immediately after running a `battenberg upgrade` command on the previously installed project*
 
-## High-level design
-
-At a high level `battenberg` attempts to provide a continuous history between the upstream template project and the cookiecut project. It does this by maintaining a disjoint `template`
-branch which `battenberg` attempts to keep in sync with the upstream template, it therefore will contain no project-specific changes beyond replacing the template values. Then changes
-to the `template` are incorporated into the `master` and other branches via a `git merge --allow-unrelated-histories` command for each template update pulled in. This merge commit
-should be used to resolve any conflicts between the upstream template and the specialized project.
-
-![A new project in battenberg](img/new.png)
-
-*This shows the repo structure immediately after running a `battenberg install <template>` command*
-
-![An updated project in battenberg](img/updated.png)
-
-*This shows the repo structure immediately after running a `battenberg upgrade` command on the previously installed project*
-
 ## Development
 
 To get set up run:
@@ -116,20 +101,6 @@ flake8 --config flake8.cfg battenberg
 
     A tribute to the shoulders this project stands on, [`cookiecutter`](https://github.com/cookiecutter/cookiecutter) &
     [`milhoja`](https://github.com/rmedaer/milhoja), and [a tasty cake](https://en.wikipedia.org/wiki/Battenberg_cake) in its own right.
-
-## FAQ
-
-* Why are you using a new `.cookiecutter.json` pattern instead of using the [`replay` pattern](https://cookiecutter.readthedocs.io/en/latest/advanced/replay.html)?
-
-    Frankly the implementation was quite convoluted to get the intentions of these features to align. With the `.cookiecutter.json` approach
-    we're intended for template state to live at the project level instead of at the user level which the `replay` functionality defaults to.
-    Overriding that behaviour, whilst possible was convoluted in the current `cookiecutter` API and would require upstream changes so instead
-    we decided against trying to align these features.
-
-* Why `battenberg`?
-
-    A tribute to the shoulders this project stands on, [`cookiecutter`](https://github.com/cookiecutter/cookiecutter) &
-    [`milhoja`](https://github.com/rmedaer/milhoja), and [a tasty cake](https://en.wikipedia.org/wiki/Battenberg_cake) in it's own right.
 
 ## Credits
 
