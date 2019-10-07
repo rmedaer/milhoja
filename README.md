@@ -19,16 +19,6 @@ conflicts needed to be manually resolved for each upgrade merge. To minimize the
 `generate_example` boolean flag which will disable including any example code, instead replacing implementation with a
 [`pass`](https://docs.python.org/3/reference/simple_stmts.html#the-pass-statement) for example.
 
-## Prerequistes
-
-It is assumed that your cookiecutter template contains a `.cookiecutter.json` file at the root directory, or you can override it's location by
-passing in `--context-file`. Please use the [`jsonify`](https://github.com/cookiecutter/cookiecutter/pull/791) Jinja2 extension to dump the
-`cookiecutter` template context to `.cookiecutter.json`.
-
-**Tip:** One problem `milhoja` has that as divergence between the cookiecutter template and the project itself increase as will the volume of
-conflicts needed to be manually resolved for each upgrade merge. To minimize these it is often advisable to fit templates with a
-`generate_example` boolean flag which will disable including any example code, instead replacing implementation with a [`pass`](https://docs.python.org/2.0/ref/pass.html) for example.
-
 ## Usage
 
 Install a [Cookiecutter](https://github.com/audreyr/cookiecutter) template:
@@ -71,18 +61,18 @@ should be used to resolve any conflicts between the upstream template and the sp
 
 ## High-level design
 
-At a high level `milhoja` attempts to provide a continuous history between the upstream template project and the cookiecut project. It does this by maintaining a disjoint `template`
-branch which `milhoja` attempts to keep in sync with the upstream template, it therefore will contain no project-specific changes beyond replacing the template values. Then changes
+At a high level `battenberg` attempts to provide a continuous history between the upstream template project and the cookiecut project. It does this by maintaining a disjoint `template`
+branch which `battenberg` attempts to keep in sync with the upstream template, it therefore will contain no project-specific changes beyond replacing the template values. Then changes
 to the `template` are incorporated into the `master` and other branches via a `git merge --allow-unrelated-histories` command for each template update pulled in. This merge commit
 should be used to resolve any conflicts between the upstream template and the specialized project.
 
-![A new project in milhoja](img/new.png)
+![A new project in battenberg](img/new.png)
 
-*This shows the repo structure immediately after running a `milhoja install <template>` command*
+*This shows the repo structure immediately after running a `battenberg install <template>` command*
 
-![An updated project in milhoja](img/updated.png)
+![An updated project in battenberg](img/updated.png)
 
-*This shows the repo structure immediately after running a `milhoja upgrade` command on the previously installed project*
+*This shows the repo structure immediately after running a `battenberg upgrade` command on the previously installed project*
 
 ## Development
 
@@ -135,6 +125,11 @@ flake8 --config flake8.cfg battenberg
     we're intended for template state to live at the project level instead of at the user level which the `replay` functionality defaults to.
     Overriding that behaviour, whilst possible was convoluted in the current `cookiecutter` API and would require upstream changes so instead
     we decided against trying to align these features.
+
+* Why `battenberg`?
+
+    A tribute to the shoulders this project stands on, [`cookiecutter`](https://github.com/cookiecutter/cookiecutter) &
+    [`milhoja`](https://github.com/rmedaer/milhoja), and [a tasty cake](https://en.wikipedia.org/wiki/Battenberg_cake) in it's own right.
 
 ## Credits
 
