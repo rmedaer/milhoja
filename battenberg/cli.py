@@ -58,7 +58,7 @@ def main(ctx, o, verbose):
 @click.argument('template')
 @click.argument('extra_context', nargs=-1, callback=validate_extra_context)
 @click.option(
-    '-c',
+    '--checkout',
     help='branch, tag or commit to checkout',
     default='master'
 )
@@ -78,7 +78,7 @@ def install(ctx, template, **kwargs):
 @main.command()
 @click.argument('extra_context', nargs=-1, callback=validate_extra_context)
 @click.option(
-    '-c',
+    '--checkout',
     help='branch, tag or commit to checkout',
     default='master'
 )

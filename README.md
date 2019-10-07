@@ -24,10 +24,10 @@ conflicts needed to be manually resolved for each upgrade merge. To minimize the
 Install a [Cookiecutter](https://github.com/audreyr/cookiecutter) template:
 
 ```bash
-battenberg [-C <root path>] [--verbose] install [-c v1.0.0] <cookiecutter template path/URL>
+battenberg [-O <root path>] [--verbose] install [--checkout v1.0.0] <cookiecutter template path/URL>
 ```
 
-* `-c` - Specifies a target reference (branch, tag or commit) from the cookiecutter template repo.
+* `--checkout` - Specifies a target reference (branch, tag or commit) from the cookiecutter template repo.
 * `-O` - Specifies an output folder path, defaults to the current directory.
 * `--verbose` - Enables extra debug logging.
 

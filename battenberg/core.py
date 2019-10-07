@@ -43,7 +43,7 @@ class TemporaryWorktree:
         self.repo = None
         self.empty = empty
 
-    def __enter__(self):
+    def __enter__(self) -> 'TemporaryWorktree':
         if self.upstream.head_is_unborn:
             raise RepositoryEmptyException()
 
@@ -83,37 +83,29 @@ class Battenberg:
     def is_installed(self) -> bool:
         return TEMPLATE_BRANCH in self.repo.listall_branches()
 
-    def get_template(self):
-        context = self.get_context()
-        return context['_template']
-
     def get_context(self, context_file: str) -> Dict[str, Any]:
         with open(os.path.join(self.repo.workdir, context_file)) as f:
             return json.load(f)
 
-    def resolve_merge_target(self, merge_target: str = None):
-        if merge_target is None:
-            # Default to merging into the HEAD.
-            return self.repo.head.target
-        
-        # Assume this is a valid commit or branch identifier.
-        return merge_target
-
     def merge_template_branch(self, message: str, merge_target: str = None):
         branch = self.repo.lookup_branch(TEMPLATE_BRANCH)
-        merge_target_ref = self.resolve_merge_target(merge_target)
+
+        merge_target_ref = 'HEAD'
+        if merge_target is not None:
+            # If we have a merge target, ensure we have that branch and have switched to it
+            # before continuing with merging.
+            merge_target_ref = f'refs/heads/{merge_target}'
+            if merge_target not in self.repo.branches:
+                self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
+            self.repo.checkout(merge_target_ref)
 
         # Analyze merge between template branch and our merge target.
-        analysis, _ = self.repo.merge_analysis(branch.target, our_ref=merge_target_ref)
+        analysis, _ = self.repo.merge_analysis(branch.target, merge_target_ref)
 
         if analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE:
             logger.info('The branch is already up to date, no need to merge.')
 
         elif analysis & GIT_MERGE_ANALYSIS_FASTFORWARD or analysis & GIT_MERGE_ANALYSIS_NORMAL:
-
-            # Ensure we're merging into the right
-            self.repo.checkout(merge_target_ref)
-
             # Let's merge template changes using --allow-unrelated-histories. This will allow
             # the disjoint histories to be merged successfully. If you want to manually replicate
             # this option please run:
@@ -210,13 +202,12 @@ class Battenberg:
         if not self.is_installed():
             raise TemplateNotFoundException()
 
-        # Fetch template information, this is normally the git:// URL.
-        template = self.get_template()
-        logger.debug(f'Found template: {template}')
-
         # Get last context used to apply template
         context = self.get_context(context_file)
         logger.debug(f'Found context: {context}')
+        # Fetch template information, this is normally the git:// URL.
+        template = context['_template']
+        logger.debug(f'Found template: {template}')
 
         # Merge original context and extra_context (priority to extra_context)
         context.update(extra_context)
