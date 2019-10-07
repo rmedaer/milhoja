@@ -66,7 +66,7 @@ To run tests:
 To run linting:
 
     ```bash
-    flake8 --config flake8.cfg
+    flake8 --config flake8.cfg milhoja
     ```
 
 ## Credits
