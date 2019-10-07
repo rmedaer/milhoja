@@ -8,9 +8,9 @@ import logging
 import click
 from cookiecutter.cli import validate_extra_context
 from cookiecutter.exceptions import CookiecutterException
-from milhoja.core import Milhoja
-from milhoja.utils import open_repository, open_or_init_repository
-from milhoja.errors import MilhojaException
+from battenberg.core import Battenberg
+from battenberg.utils import open_repository, open_or_init_repository
+from battenberg.errors import BattenbergException
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ logger.addHandler(handler)
 @click.option(
     '-C',
     default='.',
-    help='Run as if milhoja was started in <path> instead of the current working directory.',
+    help='Run as if battenberg was started in <path> instead of the current working directory.',
     type=click.Path()
 )
 @click.option(
@@ -41,11 +41,11 @@ logger.addHandler(handler)
 )
 @click.pass_context
 def main(ctx, c, context_file, verbose):
-    """Script entry point for Milhoja commands.
+    """Script entry point for Battenberg commands.
 
     Arguments:
     ctx -- CLI context.
-    c -- Path where to run milhoja
+    c -- Path where to run battenberg
     context_file -- Path where we can find the output of the cookiecutter template context
     verbose -- Enables debug logging
     """
@@ -64,15 +64,15 @@ def main(ctx, c, context_file, verbose):
 @click.pass_context
 def show(ctx, **kwargs):
     try:
-        milhoja = Milhoja(open_repository(ctx.obj['target']), ctx.obj['context_file'])
-        template, checkout = milhoja.get_template()
-        context = milhoja.get_context()
+        battenberg = Battenberg(open_repository(ctx.obj['target']), ctx.obj['context_file'])
+        template, checkout = battenberg.get_template()
+        context = battenberg.get_context()
 
         logger.info(f'Template: {template}')
         logger.info(f'Checkout: %{checkout}')
         logger.info('Context:')
         logger.info(json.dumps(context, indent=4, separators=(',', ': ')))
-    except (MilhojaException, CookiecutterException) as error:
+    except (BattenbergException, CookiecutterException) as error:
         raise click.ClickException from error
 
 
@@ -91,9 +91,9 @@ def show(ctx, **kwargs):
 @click.pass_context
 def install(ctx, template, **kwargs):
     try:
-        milhoja = Milhoja(open_or_init_repository(ctx.obj['target']), ctx.obj['context_file'])
-        milhoja.install(template, **kwargs)
-    except (MilhojaException, CookiecutterException) as error:
+        battenberg = Battenberg(open_or_init_repository(ctx.obj['target']), ctx.obj['context_file'])
+        battenberg.install(template, **kwargs)
+    except (BattenbergException, CookiecutterException) as error:
         raise click.ClickException from error
 
 
@@ -112,7 +112,7 @@ def install(ctx, template, **kwargs):
 @click.pass_context
 def upgrade(ctx, **kwargs):
     try:
-        milhoja = Milhoja(open_repository(ctx.obj['target']), ctx.obj['context_file'])
-        milhoja.upgrade(**kwargs)
-    except (MilhojaException, CookiecutterException) as error:
+        battenberg = Battenberg(open_repository(ctx.obj['target']), ctx.obj['context_file'])
+        battenberg.upgrade(**kwargs)
+    except (BattenbergException, CookiecutterException) as error:
         raise click.ClickException from error

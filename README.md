@@ -1,12 +1,12 @@
-# milhoja
+# battenberg
 
-[![image](https://img.shields.io/pypi/v/milhoja.svg)](https://pypi.python.org/pypi/milhoja)
+[![image](https://img.shields.io/pypi/v/battenberg.svg)](https://pypi.python.org/pypi/battenberg)
 
-[![image](https://img.shields.io/travis/rmedaer/milhoja.svg)](https://travis-ci.org/rmedaer/milhoja)
+[![image](https://img.shields.io/travis/zillow/battenberg.svg)](https://travis-ci.org/zillow/battenberg)
 
-Battenberg is a tool built atop of Cookiecutter to keep Cookiecut projects in sync with their parent templates.
-Under the hood, Battenberg relies on Git to manage the merging, diffing, and conflict resolution story. The first
-goal of Battenberg is to provide an *upgrade* feature to Cookiecutter.
+Battenberg is a tool built atop of [Cookiecutter](https://github.com/audreyr/cookiecutter) to keep Cookiecut projects
+in sync with their parent templates. Under the hood, Battenberg relies on Git to manage the merging, diffing, and
+conflict resolution story. The first goal of Battenberg is to provide an *upgrade* feature to Cookiecutter.
 
 ## Prerequistes
 
@@ -14,7 +14,7 @@ It is assumed that your cookiecutter template contains a `.cookiecutter.json` fi
 passing in `--context-file`. Please use the [`jsonify`](https://github.com/cookiecutter/cookiecutter/pull/791) Jinja2 extension to dump the
 `cookiecutter` template context to `.cookiecutter.json`.
 
-**Tip:** One problem `milhoja` has that as divergence between the cookiecutter template and the project itself increase as will the volume of
+**Tip:** One problem `battenberg` has that as divergence between the cookiecutter template and the project itself increase as will the volume of
 conflicts needed to be manually resolved for each upgrade merge. To minimize these it is often advisable to fit templates with a
 `generate_example` boolean flag which will disable including any example code, instead replacing implementation with a
 [`pass`](https://docs.python.org/3/reference/simple_stmts.html#the-pass-statement) for example.
@@ -25,47 +25,47 @@ Install a [Cookiecutter](https://github.com/audreyr/cookiecutter)
 template on current directory:
 
     ```bash
-    milhoja install <your cookiecutter>
+    battenberg install <your cookiecutter>
     ```
 
 Specify a target reference (branch, tag, commit):
 
     ```bash
-    milhoja install -c v1.0.0 <your cookiecutter>
+    battenberg install -c v1.0.0 <your cookiecutter>
     ```
 
 Show installed template:
 
     ```bash
-    milhoja show
+    battenberg show
     ```
 
 Install a [Cookiecutter](https://github.com/audreyr/cookiecutter) template on your existing Git repository:
 
     ```bash
-    milhoja -C <your repo path> install <your cookiecutter>
+    battenberg -C <your repo path> install <your cookiecutter>
     ```
 
 Upgrade your repository with last version of template:
 
     ```bash
-    milhoja -C <your repo path> upgrade
+    battenberg -C <your repo path> upgrade
     ```
 
 ## High-level design
 
-At a high level `milhoja` attempts to provide a continuous history between the upstream template project and the cookiecut project. It does this by maintaining a disjoint `template`
-branch which `milhoja` attempts to keep in sync with the upstream template, it therefore will contain no project-specific changes beyond replacing the template values. Then changes
+At a high level `battenberg` attempts to provide a continuous history between the upstream template project and the cookiecut project. It does this by maintaining a disjoint `template`
+branch which `battenberg` attempts to keep in sync with the upstream template, it therefore will contain no project-specific changes beyond replacing the template values. Then changes
 to the `template` are incorporated into the `master` and other branches via a `git merge --allow-unrelated-histories` command for each template update pulled in. This merge commit
 should be used to resolve any conflicts between the upstream template and the specialized project.
 
-![A new project in milhoja](img/new.png)
+![A new project in battenberg](img/new.png)
 
-*This shows the repo structure immediately after running a `milhoja install <template>` command*
+*This shows the repo structure immediately after running a `battenberg install <template>` command*
 
-![An updated project in milhoja](img/updated.png)
+![An updated project in battenberg](img/updated.png)
 
-*This shows the repo structure immediately after running a `milhoja upgrade` command on the previously installed project*
+*This shows the repo structure immediately after running a `battenberg upgrade` command on the previously installed project*
 
 ## Development
 
@@ -82,7 +82,7 @@ To get set up run:
     pip install -e ".[dev]"
     ```
 
-Then to actually perform any operations just use the `milhoja` command which should now be on your `$PATH`.
+Then to actually perform any operations just use the `battenberg` command which should now be on your `$PATH`.
 
 To run tests:
 
@@ -93,7 +93,7 @@ To run tests:
 To run linting:
 
     ```bash
-    flake8 --config flake8.cfg milhoja
+    flake8 --config flake8.cfg battenberg
     ```
 
 ## FAQ
@@ -105,9 +105,14 @@ To run linting:
     Overriding that behaviour, whilst possible was convoluted in the current `cookiecutter` API and would require upstream changes so instead
     we decided against trying to align these features.
 
+* Why `battenberg`?
+
+    A tribute to the shoulders this project stands on, [`cookiecutter`](https://github.com/cookiecutter/cookiecutter) &
+    [`milhoja`](https://github.com/rmedaer/milhoja), and [a tasty cake](https://en.wikipedia.org/wiki/Battenberg_cake) in it's own right.
+
 ## Credits
 
-[Original code](https://github.com/rmedaer/milhoja) written by [Raphael Medaer](https://github.com/rmedaer) from an [original
+[Original code](https://github.com/rmedaer/battenberg) written by [Raphael Medaer](https://github.com/rmedaer) from an [original
 idea](https://github.com/cookiecutter/cookiecutter/issues/784) of [Abdó Roig-Maranges](https://github.com/aroig).
 
 ## License

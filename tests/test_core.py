@@ -1,6 +1,6 @@
 import pytest
 from click.testing import CliRunner
-from milhoja import cli
+from battenberg import cli
 
 
 def test_cli():
@@ -9,4 +9,4 @@ def test_cli():
     assert result.exit_code == 0
     help_result = runner.invoke(cli.main, ['--help'])
     assert help_result.exit_code == 0
-    assert '--help     Show this message and exit.' in help_result.output
+    assert '--help' in help_result.output
