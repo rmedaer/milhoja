@@ -3,7 +3,6 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))  # noqa: E402
 
 
-import json
 import logging
 import click
 from cookiecutter.cli import validate_extra_context
@@ -37,7 +36,7 @@ logger.addHandler(handler)
 def main(ctx, o, verbose):
     """
     \f
-    
+
     Script entry point for Battenberg commands.
     Arguments:
         ctx -- CLI context.
