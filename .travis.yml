@@ -13,5 +13,7 @@ install:
 script:
   - echo "Script starting"
   - flake8 --config flake8.cfg battenberg
-  - pytest
+  - pytest --cov=battenberg
+  # Upload the code coverage report to codecov
+  - codecov
   - echo "Script ending"
