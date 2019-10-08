@@ -19,6 +19,8 @@ deploy:
   provider: pypi
   user: __token__
   password:
+    # This is an encrypted copy of the PyPI API token which you get from your PyPI Account Settings page.
+    # Generated using: travis encrypt <pypi api token> --add deploy.password
     secure: HH8cRveKVVLAlSnnKARV6SuX9+VZi5tfaaM/r8lXxyaM2gCf6i2tPuuagmGhW8Zv0mPR/8qn21s2/hHIo55M2c2l3/WbLwGzeMv57aObvvHDDRfgiHIMEyDS5jhPyqpW+lJkzuwUDjimpa+f8qGQVqxTVjg7PZoJ8/twYRP4tZ8CZaIa9RG9xqvVjoYzt2mvrlnUcW28GIZYJ+BAy5TPZAFTmsmR41aIiLSZu3BTNLadydbQUVKKkIxxvVW2VwGaUmt8QkG3Cs+UPS0N8jWAkc4hafL1Yly+dMvEHDuqELxjW1cDDEeLY35m5WGdA1nxxd8hQjId3rd6gaVdyxjFOKScEChR7Hp/B+ktDbimGOkJSVAGrPYpCuXRwvwEWRA9Sn9vqSdVNzp7AgYyDjSyGRfqer2iPqo+JjUwisF1WLDz77ZmFWrmLrUtbDgtE/CM5LK2lY/ixIO7hZ+e2wRH4V7ifvBCHYItDMFWdLcGy9VVu4epAr3CsmzoqQdb587uoi+rV6wEwkCPHkn2mDiqgGVVjE3A9VwKcSJYmLIHQEFDtp6UgieJdBM023LXbNPjMlUcG1HGVzVXNNTuPY4qudogftXJJ84n9ZqjINOr++PMaor7Vm+bCUnZ+d6XvTbypZnFs3GKoPseZ8kJs9xSlP1fZLGA3Z5v+TgiWB7XKPg=
   on:
     tags: true
