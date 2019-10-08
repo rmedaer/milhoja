@@ -1,6 +1,8 @@
 import os
 import shutil
 import tempfile
+from types import TracebackType
+from typing import Optional, Type
 
 from pygit2 import Repository, Worktree
 from battenberg.errors import (
@@ -47,7 +49,8 @@ class TemporaryWorktree:
 
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type: Optional[Type[BaseException]], value: Optional[BaseException],
+                 traceback: TracebackType):
         shutil.rmtree(self.tmp)
 
         # Prune temp worktree

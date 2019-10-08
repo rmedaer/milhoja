@@ -19,7 +19,7 @@ class WorktreeException(BattenbergException):
     Error raised when worktree could not be initialized.
     """
 
-    def __init__(self, worktree_name, worktree_path):
+    def __init__(self, worktree_name: str, worktree_path: str):
         super().__init__(
             f'Worktree \'{worktree_name}\' could not be initialized in path \'{worktree_path}\''
         )
@@ -30,11 +30,8 @@ class WorktreeConflictException(BattenbergException):
     Error raised when worktree already exist.
     """
 
-    def __init__(self, worktree_name=None):
-        if worktree_name:
-            super().__init__(f'Worktree {worktree_name} already exists')
-        else:
-            super().__init__('Worktree already exists')
+    def __init__(self, worktree_name: str):
+        super().__init__(f'Worktree {worktree_name} already exists')
 
 
 class TemplateNotFoundException(BattenbergException):
