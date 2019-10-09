@@ -1,5 +1,4 @@
 import os
-import six
 import json
 import shutil
 import tempfile
@@ -14,7 +13,7 @@ from pygit2 import (
     Worktree
 )
 from cookiecutter.main import cookiecutter
-from milhoja.errors import (
+from battenberg.errors import (
     MergeConflictException,
     RepositoryEmptyException,
     TemplateConflictException,
@@ -76,9 +75,9 @@ class TemporaryWorktree:
         self.upstream.lookup_branch(self.name).delete()
 
 
-class Milhoja:
+class Battenberg:
 
-    def __init__(self, repo: Repository, context_file: str ='.cookiecutter.json'):
+    def __init__(self, repo: Repository, context_file: str = '.cookiecutter.json'):
         self.repo = repo
         self.context_file = context_file
 
@@ -104,7 +103,7 @@ class Milhoja:
             logger.info('The branch is already up to date, no need to merge.')
 
         elif analysis & GIT_MERGE_ANALYSIS_FASTFORWARD or analysis & GIT_MERGE_ANALYSIS_NORMAL:
-            # Let's merge template changes using --allow-unrelated-histories. This will allow 
+            # Let's merge template changes using --allow-unrelated-histories. This will allow
             # the disjoint histories to be merged successfully. If you want to manually replicate
             # this option please run:
             #
@@ -134,8 +133,8 @@ class Milhoja:
                 [self.repo.head.target, branch.target]
             )
 
-            # Ensure we're not keeping any lingering metadata state before trying to merge the tmp worktree
-            # into the main HEAD.
+            # Ensure we're not keeping any lingering metadata state before trying to merge the tmp
+            # worktree into the main HEAD.
             self.repo.state_cleanup()
             self.repo.checkout('HEAD')
         else:
@@ -151,7 +150,7 @@ class Milhoja:
 
         # Create temporary worktree
         with TemporaryWorktree(self.repo, WORKTREE_NAME) as worktree:
-            result = cookiecutter(
+            cookiecutter(
                 template,
                 checkout,
                 no_input,
@@ -213,7 +212,7 @@ class Milhoja:
             branch = worktree.repo.lookup_branch(TEMPLATE_BRANCH)
             worktree.repo.set_head(branch.name)
 
-            result = cookiecutter(
+            cookiecutter(
                 template,
                 checkout,
                 no_input,

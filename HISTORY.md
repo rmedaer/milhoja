@@ -1,28 +1,9 @@
 # Release History
 
-## 0.3.1 (2017-03-15)
+## 0.1.0 (???)
 
-  - Fixed upgrade: remove deleted files.
-  - Added error handling when we cannot init worktree.
-  - Added error handling when target repository is empty.
+- Add in support for reading template context from `.cookiecutter.json`. (See [#2](https://github.com/zillow/battenberg/pull/2))
+- Add in `--merge-target` CLI option. (See #???)
+- Expanded test coverage, added in CI/CD via Travis CI. (See #???)
 
-## 0.3.0 (2017-03-09)
-
-  - Added native Debian packaging.
-
-## 0.2.0 (2017-03-08)
-
-  - Gathered Git notes (template and context namespaces) into only one
-    and unique template namespace.
-  - Implemented error handling. Display nice errors on CLI.
-
-## 0.1.1 (2017-03-07)
-
-  - Fixed CLI context.
-
-## 0.1.0 (2017-03-06)
-
-  - First release of Milhoja.
-  - Implemented mechanism to install a template.
-  - Implemented mechanism to upgrade a template.
-  - Added command to show installed template.
+Prior to v0.1.0 `battenberg` was developed under the [`milhoja`](https://github.com/rmedaer/milhoja) project.

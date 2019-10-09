@@ -9,41 +9,40 @@ with open('README.md') as readme_file:
 with open('HISTORY.md') as history_file:
     history = history_file.read()
 
-with io.open('milhoja/__init__.py', 'rt', encoding='utf8') as f:
+with io.open('battenberg/__init__.py', 'rt', encoding='utf8') as f:
     version = re.search(r'__version__ = \'(.*?)\'', f.read()).group(1)
 
 
 install_requires = [
     'Click>=6.0',
     'cookiecutter>=1.6.0',
-    'six>=1.12.0',
     # You'll also need to install libgit2 to get this to work.
     # See instructions here: https://www.pygit2.org/install.html
     'pygit2>=0.28.0'
 ]
 
 setup(
-    name='milhoja',
+    name='battenberg',
     version=version,
     description="Mixing Cookiecutter and Git to ends up sticking to your finger.",
     long_description=readme + '\n\n' + history,
     author="Raphael Medaer",
     author_email='raphael@medaer.me',
-    url='https://github.com/rmedaer/milhoja',
+    url='https://github.com/rmedaer/battenberg',
     packages=[
-        'milhoja',
+        'battenberg',
     ],
-    package_dir={'milhoja': 'milhoja'},
+    package_dir={'battenberg': 'battenberg'},
     entry_points={
         'console_scripts': [
-            'milhoja=milhoja.cli:main'
+            'battenberg=battenberg.cli:main'
         ]
     },
     include_package_data=True,
     install_requires=install_requires,
     license="Apache Software License 2.0",
     zip_safe=False,
-    keywords='milhoja',
+    keywords='battenberg',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

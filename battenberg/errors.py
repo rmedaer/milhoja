@@ -1,11 +1,11 @@
-class MilhojaException(Exception):
+class BattenbergException(Exception):
     """
-    Abstract Milhoja generic exception.
+    Abstract Battenberg generic exception.
     """
     pass
 
 
-class TemplateConflictException(MilhojaException):
+class TemplateConflictException(BattenbergException):
     """
     Error raised when a template is already installed.
     """
@@ -14,7 +14,7 @@ class TemplateConflictException(MilhojaException):
         super().__init__('Template already installed')
 
 
-class WorktreeException(MilhojaException):
+class WorktreeException(BattenbergException):
     """
     Error raised when worktree could not be initialized.
     """
@@ -25,7 +25,7 @@ class WorktreeException(MilhojaException):
         )
 
 
-class WorktreeConflictException(MilhojaException):
+class WorktreeConflictException(BattenbergException):
     """
     Error raised when worktree already exist.
     """
@@ -37,7 +37,7 @@ class WorktreeConflictException(MilhojaException):
             super().__init__('Worktree already exists')
 
 
-class TemplateNotFoundException(MilhojaException):
+class TemplateNotFoundException(BattenbergException):
     """
     Error raised when template could not be found.
     """
@@ -46,7 +46,7 @@ class TemplateNotFoundException(MilhojaException):
         super().__init__('Template could not be found')
 
 
-class RepositoryEmptyException(MilhojaException):
+class RepositoryEmptyException(BattenbergException):
     """
     Error raised when Git repository is unborn.
     """
@@ -55,7 +55,7 @@ class RepositoryEmptyException(MilhojaException):
         super().__init__('Target repository is empty')
 
 
-class MergeConflictException(MilhojaException):
+class MergeConflictException(BattenbergException):
     """
     Error raised when we cannot merge the template commit with the target branch.
     """
