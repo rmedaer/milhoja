@@ -37,7 +37,6 @@ class Battenberg:
 
     def merge_template_branch(self, message: str, merge_target: str = None):
         branch = self.repo.lookup_branch(TEMPLATE_BRANCH)
-        merge_target_ref = self.resolve_merge_target(merge_target)
 
         merge_target_ref = 'HEAD'
         if merge_target is not None:
