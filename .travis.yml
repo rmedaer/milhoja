@@ -1,19 +1,27 @@
 language: python
 matrix:
   include:
-    - name: "Python 3.6"
-      python: 3.6
-    - name: "Python 3.7"
-      python: 3.7
-install: 
-  - echo "Install starting"
-  - pip3 install ".[dev]"
-  - echo "Install ending"
-
+  - name: Python 3.6
+    python: 3.6
+  - name: Python 3.7
+    python: 3.7
+install:
+- echo "Install starting"
+- pip3 install ".[dev]"
+- echo "Install ending"
 script:
-  - echo "Script starting"
-  - flake8 --config flake8.cfg battenberg
-  - pytest --cov=battenberg
-  # Upload the code coverage report to codecov
-  - codecov
-  - echo "Script ending"
+- echo "Script starting"
+- flake8 --config flake8.cfg battenberg
+- pytest --cov=battenberg
+- codecov
+- echo "Script ending"
+deploy:
+  provider: pypi
+  user: __token__
+  password:
+    # This is an encrypted copy of the PyPI API token which you get from your PyPI Account Settings page.
+    # Generated using: travis encrypt <pypi api token> --add deploy.password
+    secure: l+4P4lsxAqwxeclqp0zZUpHm2SH7cPu7qFJzH2pqMZM3SI5TZMF+2JXzL7U7ceHZvFHTL7iyPtvS4LXuxjFeAMhzBUS47mikQO6Wg06iFinc0s9/K7iy6f3cLlWQ6Z5tylSiA1yirCMuF6UPJDDACVo72KzRKdAYKz4jqmJYBHxvF43G23Edptcncle7t6OtCz7tzet2U+4zM9nGnqbyFYeQ9ZdrdGfizj5JgXQSyaln2bP1Z0V5Hnfmv9Si+ypPMrfoxxXyviYvD/oAG0ED/DLZokjmgEjP3S79jqUrmsJilP5CQYLjrdQqcXirUaBm8JlvOqQRicI3vAFSvk4sKcvHY5ERfw7wN1/BsL8fv/AN3g3eQChcM48qw8sppsmPmPcNpd5pGBq5lY3jDqOh4XJn+PExssNhPc+ibWFPvdkWykzwGIlGJ2ENQvLO660COOa0ekWLt3K9NZLcgkVmyJAUoRa0QtgBIPy+ks9wzAUjSPlKrmX2JnExIXP1pxRYXK+MD7laNMrYRgX8J05AM/kpQiif0WZ6E/KYOUN+lj7+Zq7qhCkrhBkc/YO1xtyzqxdeZe9hvkKcJ0onAV3t5NOIPHIlLxvvNpQvxPzE43CqmzYJXiLvAgBr4t76KXNC0cfqj5kLcOsQQx5VkHisrJSmkcGcgpA4jEUVz5L7rDg=
+  on:
+    tags: true
+  skip_existing: true
