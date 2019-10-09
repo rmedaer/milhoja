@@ -1,0 +1,69 @@
+import pytest
+from pygit2 import Reference, Repository
+from battenberg.errors import TemplateConflictException, TemplateNotFoundException
+from battenberg.core import Battenberg
+
+
+@pytest.fixture
+def installed_repo(repo: Repository, template_repo: Repository) -> Repository:
+    battenberg = Battenberg(repo)
+    battenberg.install(template_repo.workdir, no_input=True)
+    return repo
+
+
+def find_ref_from_message(repo: Repository, message: str) -> Reference:
+    return next(ref for ref in repo.references['refs/heads/master'].log()
+                if ref.message == message)
+
+
+def test_install(repo, template_repo):
+    battenberg = Battenberg(repo)
+    battenberg.install(template_repo.workdir, no_input=True)
+
+    assert battenberg.is_installed()
+    # Ensure we have the appropriate branches we expect.
+    assert not {'master', 'template'} - set(repo.listall_branches())
+
+    # Ensure we have a valid structure for the template branch.
+    template_oids = {ref.oid_new for ref in repo.references['refs/heads/template'].log()}
+    template_commits = [repo[oid].message for oid in template_oids]
+    assert template_commits == ['Prepared template installation']
+
+    # Ensure we have valid merge commit from the template branch -> master.
+    template_install_message = f'commit (merge): Installed template \'{template_repo.workdir}\''
+    master_merge_ref = find_ref_from_message(repo, template_install_message)
+    assert master_merge_ref
+    # Ensure the merge commit was derived from the template branch.
+    assert not template_oids - set(repo[master_merge_ref.oid_new].parent_ids)
+
+
+def test_install_raises_template_conflict(repo, template_repo):
+    # Create an existing template branch to force the error.
+    repo.create_branch('template', repo[repo.head.target])
+
+    battenberg = Battenberg(repo)
+
+    with pytest.raises(TemplateConflictException):
+        battenberg.install(template_repo.workdir)
+
+
+def test_upgrade_raises_template_not_found(repo):
+    battenberg = Battenberg(repo)
+    with pytest.raises(TemplateNotFoundException):
+        battenberg.upgrade()
+
+
+def test_upgrade(installed_repo, template_repo):
+    battenberg = Battenberg(installed_repo)
+    battenberg.upgrade(checkout='upgrade', no_input=True)
+
+    template_oids = {ref.oid_new for ref in installed_repo.references['refs/heads/template'].log()}
+    template_commits = [installed_repo[oid].message for oid in template_oids]
+    assert not set(template_commits) - {'Prepared template installation',
+                                        'Prepared template upgrade'}
+
+    template_upgrade_message = f'commit (merge): Upgraded template \'{template_repo.workdir}\''
+    master_merge_ref = find_ref_from_message(installed_repo, template_upgrade_message)
+    assert master_merge_ref
+    # Ensure the merge commit was derived from the template branch.
+    assert template_oids & set(installed_repo[master_merge_ref.oid_new].parent_ids)

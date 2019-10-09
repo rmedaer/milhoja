@@ -54,12 +54,12 @@ def test_raises_worktree_error(mkdtemp, repo, worktree_name, worktree_path):
 
 @pytest.mark.parametrize('empty,dir_contents', (
     (True, ['.git']),
-    (False, ['ipsum', 'a.copy', 'a', '.git', 'c', 'b'])
+    (False, ['.gitignore', '.git', 'hello.txt'])
 ))
 def test_initializes_empty_worktree(repo, worktree_name, empty, dir_contents):
     # Loop over all the entries in the unstaged tree.
     get_tree_entries = lambda r: [entry.name for entry in r[r.head.target].tree]
-    assert get_tree_entries(repo) == ['a', 'a.copy', 'b', 'c', 'ipsum']
+    assert get_tree_entries(repo) == ['.gitignore', 'hello.txt']
 
     with TemporaryWorktree(repo, worktree_name, empty=empty) as tmp_worktree:
         # Not an easy way to compare apples to apples here as it constructs the worktree
