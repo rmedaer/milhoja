@@ -89,6 +89,7 @@ class Battenberg:
 
     def merge_template_branch(self, message: str, merge_target: str = None):
         branch = self.repo.lookup_branch(TEMPLATE_BRANCH)
+        merge_target_ref = self.resolve_merge_target(merge_target)
 
         merge_target_ref = 'HEAD'
         if merge_target is not None:
@@ -105,6 +106,10 @@ class Battenberg:
             logger.info('The branch is already up to date, no need to merge.')
 
         elif analysis & GIT_MERGE_ANALYSIS_FASTFORWARD or analysis & GIT_MERGE_ANALYSIS_NORMAL:
+
+            # Ensure we're merging into the right
+            self.repo.checkout(merge_target_ref)
+
             # Let's merge template changes using --allow-unrelated-histories. This will allow
             # the disjoint histories to be merged successfully. If you want to manually replicate
             # this option please run:

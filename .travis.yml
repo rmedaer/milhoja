@@ -1,0 +1,19 @@
+language: python
+matrix:
+  include:
+    - name: "Python 3.6"
+      python: 3.6
+    - name: "Python 3.7"
+      python: 3.7
+install: 
+  - echo "Install starting"
+  - pip3 install ".[dev]"
+  - echo "Install ending"
+
+script:
+  - echo "Script starting"
+  - flake8 --config flake8.cfg battenberg
+  - pytest --cov=battenberg
+  # Upload the code coverage report to codecov
+  - codecov
+  - echo "Script ending"

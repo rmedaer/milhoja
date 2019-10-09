@@ -55,6 +55,6 @@ setup(
     ],
     python_requires=">=3.6*",
     extras_require={
-        'dev': ['pytest', 'flake8']
+        'dev': ['pytest', 'pytest-cov', 'flake8', 'codecov']
     }
 )
