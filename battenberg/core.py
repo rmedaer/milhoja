@@ -166,6 +166,7 @@ class Battenberg:
                 replay=False,
                 overwrite_if_exists=True,
                 output_dir=worktree.path,
+                strip=True
             )
 
             # Stage changes
@@ -231,6 +232,7 @@ class Battenberg:
                 replay=False,
                 overwrite_if_exists=True,
                 output_dir=worktree.path,
+                strip=True
             )
 
             # Stage changes

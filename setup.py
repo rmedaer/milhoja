@@ -17,7 +17,7 @@ install_requires = [
     'Click>=6.0',
     # We need the functionality provided by this branch. See this PR for more info:
     # https://github.com/cookiecutter/cookiecutter/pull/907
-    'cookiecutter @ git+ssh://git@github.com/zillow/cookiecutter@strip_dir#egg=cookiecutter',
+    'cookiecutter @ https://github.com/zillow/cookiecutter/tarball/strip_dir',
     # You'll also need to install libgit2 to get this to work.
     # See instructions here: https://www.pygit2.org/install.html
     'pygit2>=0.28.0'
