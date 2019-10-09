@@ -1,7 +1,7 @@
 import os
 from unittest.mock import patch
 import pytest
-from battenberg.tmp_worktree import TemporaryWorktree
+from battenberg.temporary_worktree import TemporaryWorktree
 from battenberg.errors import (
     RepositoryEmptyException,
     WorktreeConflictException,
@@ -38,7 +38,7 @@ def test_raises_repository_empty(repo, worktree_name):
             pass
 
 
-@patch('battenberg.tmp_worktree.tempfile.mkdtemp')
+@patch('battenberg.temporary_worktree.tempfile.mkdtemp')
 def test_raises_worktree_error(mkdtemp, repo, worktree_name, worktree_path):
     mkdtemp.return_value = worktree_path
     

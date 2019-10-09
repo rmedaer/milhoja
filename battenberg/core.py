@@ -15,7 +15,7 @@ from battenberg.errors import (
     TemplateConflictException,
     TemplateNotFoundException
 )
-from battenberg.tmp_worktree import TemporaryWorktree
+from battenberg.temporary_worktree import TemporaryWorktree
 
 
 WORKTREE_NAME = 'templating'
