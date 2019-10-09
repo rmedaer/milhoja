@@ -21,36 +21,28 @@ conflicts needed to be manually resolved for each upgrade merge. To minimize the
 
 ## Usage
 
-Install a [Cookiecutter](https://github.com/audreyr/cookiecutter)
-template on current directory:
+Install a [Cookiecutter](https://github.com/audreyr/cookiecutter) template:
 
-    ```bash
-    battenberg install <your cookiecutter>
-    ```
+```bash
+battenberg [-O <root path>] [--verbose] install [--checkout v1.0.0] <cookiecutter template path/URL>
+```
 
-Specify a target reference (branch, tag, commit):
+* `--checkout` - Specifies a target reference (branch, tag or commit) from the cookiecutter template repo.
+* `-O` - Specifies an output folder path, defaults to the current directory.
+* `--verbose` - Enables extra debug logging.
 
-    ```bash
-    battenberg install -c v1.0.0 <your cookiecutter>
-    ```
+Upgrade your repository with last version of a template:
 
-Show installed template:
+```bash
+battenberg upgrade [--no-input] [--context-file <context filename>] [--merge-target <branch, tag or commit>]
+```
 
-    ```bash
-    battenberg show
-    ```
+* `--context-file` - Specifies where to read in the template context from, defaults to `.cookiecutter.json`.
+* `--no-input` - Read in the template context from `--context-file` instead of asking the `cookiecutter` template questions again.
+* `--merge-target` - Specify where to merge the eventual template updates.
 
-Install a [Cookiecutter](https://github.com/audreyr/cookiecutter) template on your existing Git repository:
-
-    ```bash
-    battenberg -C <your repo path> install <your cookiecutter>
-    ```
-
-Upgrade your repository with last version of template:
-
-    ```bash
-    battenberg -C <your repo path> upgrade
-    ```
+    *Note: `--merge-target` is useful to set if you are a template owner but each cookiecut repo is owned independently. The value you pass*
+    *to `--merge-target` should be the source branch for a PR that'd target `master` in the cookiecut repo so they can approve any changes.*
 
 ## High-level design
 
@@ -71,30 +63,30 @@ should be used to resolve any conflicts between the upstream template and the sp
 
 To get set up run:
 
-    ```bash
-    python3 -m venv env
-    source env/bin/activate
+```bash
+python3 -m venv env
+source env/bin/activate
 
-    # Install in editable mode so you get the updates propagated.
-    pip install -e .
+# Install in editable mode so you get the updates propagated.
+pip install -e .
 
-    # If you want to be able to run tests & linting install via:
-    pip install -e ".[dev]"
-    ```
+# If you want to be able to run tests & linting install via:
+pip install -e ".[dev]"
+```
 
 Then to actually perform any operations just use the `battenberg` command which should now be on your `$PATH`.
 
 To run tests:
 
-    ```bash
-    pytest
-    ```
+```bash
+pytest
+```
 
 To run linting:
 
-    ```bash
-    flake8 --config flake8.cfg battenberg
-    ```
+```bash
+flake8 --config flake8.cfg battenberg
+```
 
 ## FAQ
 

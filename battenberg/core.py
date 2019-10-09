@@ -43,7 +43,7 @@ class TemporaryWorktree:
         self.repo = None
         self.empty = empty
 
-    def __enter__(self):
+    def __enter__(self) -> 'TemporaryWorktree':
         if self.upstream.head_is_unborn:
             raise RepositoryEmptyException()
 
@@ -77,27 +77,29 @@ class TemporaryWorktree:
 
 class Battenberg:
 
-    def __init__(self, repo: Repository, context_file: str = '.cookiecutter.json'):
+    def __init__(self, repo: Repository):
         self.repo = repo
-        self.context_file = context_file
 
     def is_installed(self) -> bool:
         return TEMPLATE_BRANCH in self.repo.listall_branches()
 
-    def get_template(self):
-        context = self.get_context()
-        return context['_template']
-
-    def get_context(self) -> Dict[str, Any]:
-        with open(os.path.join(self.repo.workdir, self.context_file)) as f:
+    def get_context(self, context_file: str) -> Dict[str, Any]:
+        with open(os.path.join(self.repo.workdir, context_file)) as f:
             return json.load(f)
 
-    def merge_template_branch(self, message: str):
-        # Lookup template branch
+    def merge_template_branch(self, message: str, merge_target: str = None):
         branch = self.repo.lookup_branch(TEMPLATE_BRANCH)
 
-        # Analyze merge between template branch and HEAD
-        analysis, _ = self.repo.merge_analysis(branch.target)
+        merge_target_ref = 'HEAD'
+        if merge_target is not None:
+            # If we have a merge target, ensure we have that branch and have switched to it
+            # before continuing with merging.
+            merge_target_ref = f'refs/heads/{merge_target}'
+            if merge_target not in self.repo.branches:
+                self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
+            self.repo.checkout(merge_target_ref)
+
+        analysis, _ = self.repo.merge_analysis(branch.target, merge_target_ref)
 
         if analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE:
             logger.info('The branch is already up to date, no need to merge.')
@@ -140,7 +142,8 @@ class Battenberg:
         else:
             raise AssertionError(f'Unknown merge analysis result: {analysis}')
 
-    def install(self, template, checkout='master', extra_context=None, no_input=False):
+    def install(self, template: str, checkout: str = 'master', extra_context: Dict = None,
+                no_input: bool = False):
         if extra_context is None:
             extra_context = {}
 
@@ -186,7 +189,11 @@ class Battenberg:
         # Let's merge our changes into HEAD
         self.merge_template_branch(f'Installed template \'{template}\'')
 
-    def upgrade(self, checkout='master', extra_context=None, no_input=False):
+    def upgrade(self, checkout: str = 'master', extra_context: Dict = None, no_input: bool = False,
+                merge_target: str = None, context_file: str = '.cookiecutter.json'):
+        """
+
+        """
         if extra_context is None:
             extra_context = {}
 
@@ -194,13 +201,12 @@ class Battenberg:
         if not self.is_installed():
             raise TemplateNotFoundException()
 
-        # Fetch template information, this is normally the git:// URL.
-        template = self.get_template()
-        logger.debug(f'Found template: {template}')
-
         # Get last context used to apply template
-        context = self.get_context()
+        context = self.get_context(context_file)
         logger.debug(f'Found context: {context}')
+        # Fetch template information, this is normally the git:// URL.
+        template = context['_template']
+        logger.debug(f'Found template: {template}')
 
         # Merge original context and extra_context (priority to extra_context)
         context.update(extra_context)
@@ -243,4 +249,4 @@ class Battenberg:
         self.repo.lookup_branch(TEMPLATE_BRANCH).set_target(commit.hex)
 
         # Let's merge our changes into HEAD
-        self.merge_template_branch(f'Upgraded template \'{template}\'')
+        self.merge_template_branch(f'Upgraded template \'{template}\'', merge_target)
