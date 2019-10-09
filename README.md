@@ -10,13 +10,14 @@ goal of Battenberg is to provide an *upgrade* feature to Cookiecutter.
 
 ## Prerequistes
 
-It is assumed that your cookiecutter template contains a `.cookiecutter.json` file at the root directory, or you can override it's location by
+It is assumed that your cookiecutter template contains a `.cookiecutter.json` file at the root directory, or you can override its location by
 passing in `--context-file`. Please use the [`jsonify`](https://github.com/cookiecutter/cookiecutter/pull/791) Jinja2 extension to dump the
 `cookiecutter` template context to `.cookiecutter.json`.
 
 **Tip:** One problem `milhoja` has that as divergence between the cookiecutter template and the project itself increase as will the volume of
 conflicts needed to be manually resolved for each upgrade merge. To minimize these it is often advisable to fit templates with a
-`generate_example` boolean flag which will disable including any example code, instead replacing implementation with a [`pass`](https://docs.python.org/2.0/ref/pass.html) for example.
+`generate_example` boolean flag which will disable including any example code, instead replacing implementation with a
+[`pass`](https://docs.python.org/3/reference/simple_stmts.html#the-pass-statement) for example.
 
 ## Usage
 
