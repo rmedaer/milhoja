@@ -1,27 +1,23 @@
-# -*- coding: utf-8 -*-
-
 import os
 import six
 import json
 import shutil
 import tempfile
+import logging
 
 from pygit2 import (
     Repository,
-    discover_repository,
     GIT_MERGE_ANALYSIS_UP_TO_DATE,
     GIT_MERGE_ANALYSIS_FASTFORWARD,
-    GIT_MERGE_ANALYSIS_NORMAL,
-    GIT_SORT_TOPOLOGICAL,
-    GIT_SORT_REVERSE
+    GIT_MERGE_ANALYSIS_NORMAL
 )
 from cookiecutter.main import cookiecutter
-from .errors import (
+from milhoja.errors import (
+    RepositoryEmptyException,
     TemplateConflictException,
-    WorktreeConflictException,
-    WorktreeException,
     TemplateNotFoundException,
-    RepositoryEmptyException
+    WorktreeConflictException,
+    WorktreeException
 )
 
 __worktree_name__ = 'templating'
@@ -35,6 +31,10 @@ __commit_upgrade_message__ = 'Upgraded template \'%s\''
 __key_source__ = 'src'
 __key_reference__ = 'ref'
 __key_context__ = 'ctx'
+
+
+logger = logging.getLogger(__name__)
+
 
 class TemporaryWorktree():
     def __init__(self, upstream, name, empty=False, prune=True):
@@ -63,7 +63,10 @@ class TemporaryWorktree():
 
         if self.empty:
             for entry in self.repo[self.repo.head.target].tree:
-                os.remove(os.path.join(self.path, entry.name))
+                if os.path.isdir(os.path.join(self.path, entry.name)):
+                    shutil.rmtree(os.path.join(self.path, entry.name))
+                else:
+                    os.remove(os.path.join(self.path, entry.name))
 
         return self
 
@@ -79,11 +82,8 @@ class TemporaryWorktree():
         if self.obj is not None:
             self.obj.prune(True)
 
-        # Remove worktree ref in upstream repository
-        try:
-            self.upstream.lookup_branch(self.name).delete()
-        except:
-            pass
+        self.upstream.lookup_branch(self.name).delete()
+
 
 class Milhoja(object):
     def __init__(self, repo):
@@ -99,12 +99,6 @@ class Milhoja(object):
             raise TemplateNotFoundException()
 
         return branch
-
-    def get_root_commit(self):
-        return self.repo.walk(
-            self.get_template_branch().target,
-            GIT_SORT_TOPOLOGICAL | GIT_SORT_REVERSE
-        ).next()
 
     def get_last_commit(self):
         return self.repo.get(self.get_template_branch().target)
@@ -202,7 +196,6 @@ class Milhoja(object):
                 replay=False,
                 overwrite_if_exists=True,
                 output_dir=worktree.path,
-                strip=True
             )
 
             # Stage changes
@@ -233,7 +226,6 @@ class Milhoja(object):
         # Let's merge our changes into HEAD
         self.merge_template_branch(__commit_install_message__ % template)
 
-
     def upgrade(self, checkout='master', extra_context=None, no_input=False):
         if extra_context is None:
             extra_context = {}
@@ -247,9 +239,11 @@ class Milhoja(object):
 
         # Get last context used to apply template
         context = self.get_context()
+        logger.debug(f'Found context: {context}')
 
         # Merge original context and extra_context (priority to extra_context)
         context.update(extra_context)
+        logger.debug(f'Context incl. extra: {context}')
 
         # Create temporary EMPTY worktree
         with TemporaryWorktree(self.repo, __worktree_name__, empty=True) as worktree:
@@ -265,7 +259,6 @@ class Milhoja(object):
                 replay=False,
                 overwrite_if_exists=True,
                 output_dir=worktree.path,
-                strip=True
             )
 
             # Stage changes
