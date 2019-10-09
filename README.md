@@ -108,7 +108,7 @@ To run linting:
 * Why `battenberg`?
 
     A tribute to the shoulders this project stands on, [`cookiecutter`](https://github.com/cookiecutter/cookiecutter) &
-    [`milhoja`](https://github.com/rmedaer/milhoja), and [a tasty cake](https://en.wikipedia.org/wiki/Battenberg_cake) in it's own right.
+    [`milhoja`](https://github.com/rmedaer/milhoja), and [a tasty cake](https://en.wikipedia.org/wiki/Battenberg_cake) in its own right.
 
 ## Credits
 
