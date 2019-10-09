@@ -99,7 +99,6 @@ class Battenberg:
                 self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
             self.repo.checkout(merge_target_ref)
 
-        # Analyze merge between template branch and our merge target.
         analysis, _ = self.repo.merge_analysis(branch.target, merge_target_ref)
 
         if analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE:
