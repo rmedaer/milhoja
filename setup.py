@@ -15,7 +15,9 @@ with io.open('battenberg/__init__.py', 'rt', encoding='utf8') as f:
 
 install_requires = [
     'Click>=6.0',
-    'cookiecutter>=1.6.0',
+    # We need the functionality provided by this branch. See this PR for more info:
+    # https://github.com/cookiecutter/cookiecutter/pull/907
+    'cookiecutter @ git+ssh://git@github.com/zillow/cookiecutter@strip_dir#egg=cookiecutter',
     # You'll also need to install libgit2 to get this to work.
     # See instructions here: https://www.pygit2.org/install.html
     'pygit2>=0.28.0'
@@ -24,11 +26,10 @@ install_requires = [
 setup(
     name='battenberg',
     version=version,
-    description="Mixing Cookiecutter and Git to ends up sticking to your finger.",
+    description="Providing updates to cookiecutter projects.",
     long_description=readme + '\n\n' + history,
-    author="Raphael Medaer",
-    author_email='raphael@medaer.me',
-    url='https://github.com/rmedaer/battenberg',
+    author="Zillow",
+    url='https://github.com/zillow/battenberg',
     packages=[
         'battenberg',
     ],
