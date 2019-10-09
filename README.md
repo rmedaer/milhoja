@@ -4,8 +4,9 @@
 
 [![image](https://img.shields.io/travis/rmedaer/milhoja.svg)](https://travis-ci.org/rmedaer/milhoja)
 
-Milhoja is a tool in top of [Cookiecutter](https://github.com/audreyr/cookiecutter) which maintains
-directory templating with Git. The first goal of Milhoja is to provide *upgrade* feature to [Cookiecutter](https://github.com/audreyr/cookiecutter).
+Battenberg is a tool built atop of Cookiecutter to keep Cookiecut projects in sync with their parent templates.
+Under the hood, Battenberg relies on Git to manage the merging, diffing, and conflict resolution story. The first
+goal of Battenberg is to provide an *upgrade* feature to Cookiecutter.
 
 ## Usage
 

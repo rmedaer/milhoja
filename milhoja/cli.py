@@ -14,7 +14,10 @@ from milhoja.errors import MilhojaException
 
 
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())
+# Ensure we always receive debug messages.
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 
 @click.group()
