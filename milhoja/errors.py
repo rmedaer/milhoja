@@ -53,3 +53,10 @@ class RepositoryEmptyException(MilhojaException):
 
     def __init__(self):
         super().__init__('Target repository is empty')
+
+
+class MergeConflictException(MilhojaException):
+    """
+    Error raised when we cannot merge the template commit with the target branch.
+    """
+    pass
