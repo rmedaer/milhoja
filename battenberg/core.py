@@ -145,9 +145,6 @@ class Battenberg:
 
     def upgrade(self, checkout: str = 'master', extra_context: Dict = None, no_input: bool = False,
                 merge_target: str = None, context_file: str = '.cookiecutter.json'):
-        """
-
-        """
         if extra_context is None:
             extra_context = {}
 
