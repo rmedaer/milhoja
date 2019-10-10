@@ -100,6 +100,20 @@ To run linting:
 flake8 --config flake8.cfg battenberg
 ```
 
+## Releasing a new version to PyPI
+
+We utilize Travis CI's built in [deploy to PyPI](https://docs.travis-ci.com/user/deployment/pypi/) functionality. Specifically
+we've limited it to just publish on `git tags`. To release run:
+
+```bash
+# Change to the appropriate commit you want to base the release on.
+vi battenberg/__init__.py  # Update the version string.
+git tag <version>
+git push origin <version>
+```
+
+Then watch Travis CI build for any errors, eventually it should appear on the [`battenberg` PyPI](https://pypi.org/project/battenberg/) project.
+
 ## FAQ
 
 * Why are you using a new `.cookiecutter.json` pattern instead of using the [`replay` pattern](https://cookiecutter.readthedocs.io/en/latest/advanced/replay.html)?
