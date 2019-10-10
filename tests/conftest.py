@@ -10,7 +10,11 @@ from pygit2 import Repository, init_repository
 
 
 class TemporaryRepository:
-    """Taken from pygit2 tests: https://github.com/libgit2/pygit2/blob/master/test/utils.py"""
+    """
+    Constructs a git repo from the tests/data/testrepo.tar file in the /tmp directory.
+
+    Taken from pygit2 tests: https://github.com/libgit2/pygit2/blob/master/test/utils.py
+    """
 
     def __enter__(self) -> 'TemporaryRepository':
         name = 'testrepo'

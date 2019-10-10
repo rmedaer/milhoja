@@ -11,8 +11,8 @@ def installed_repo(repo: Repository, template_repo: Repository) -> Repository:
     return repo
 
 
-def find_ref_from_message(repo: Repository, message: str) -> Reference:
-    return next(ref for ref in repo.references['refs/heads/master'].log()
+def find_ref_from_message(repo: Repository, message: str, ref_name: str = 'master') -> Reference:
+    return next(ref for ref in repo.references[f'refs/heads/{ref_name}'].log()
                 if ref.message == message)
 
 
@@ -67,3 +67,21 @@ def test_upgrade(installed_repo, template_repo):
     assert master_merge_ref
     # Ensure the merge commit was derived from the template branch.
     assert template_oids & set(installed_repo[master_merge_ref.oid_new].parent_ids)
+
+
+def test_update_merge_target(installed_repo, template_repo):
+    merge_target = 'target'
+    battenberg = Battenberg(installed_repo)
+    battenberg.upgrade(checkout='upgrade', no_input=True, merge_target=merge_target)
+
+    template_upgrade_oid = next(
+        ref.oid_new for ref in installed_repo.references['refs/heads/template'].log()
+        if installed_repo[ref.oid_new].message == 'Prepared template upgrade'
+    )
+
+    template_upgrade_message = f'commit (merge): Upgraded template \'{template_repo.workdir}\''
+    master_merge_ref = find_ref_from_message(installed_repo, template_upgrade_message,
+                                             ref_name=merge_target)
+    assert master_merge_ref
+    # Ensure the merge commit on the merge target branch was derived from the template branch.
+    assert template_upgrade_oid in set(installed_repo[master_merge_ref.oid_new].parent_ids)
