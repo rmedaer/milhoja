@@ -28,6 +28,7 @@ setup(
     version=version,
     description="Providing updates to cookiecutter projects.",
     long_description=readme + '\n\n' + history,
+    long_description_content_type="text/markdown",
     author="Zillow",
     url='https://github.com/zillow/battenberg',
     project_urls={
