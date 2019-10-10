@@ -44,6 +44,15 @@ battenberg upgrade [--no-input] [--context-file <context filename>] [--merge-tar
     *Note: `--merge-target` is useful to set if you are a template owner but each cookiecut repo is owned independently. The value you pass*
     *to `--merge-target` should be the source branch for a PR that'd target `master` in the cookiecut repo so they can approve any changes.*
 
+## Onboarding existing cookiecutter projects
+
+A great feature of `battenberg` is that it's relatively easy to onboard existing projects you've already cookiecut from an existing template.
+To do this you need to follow the `battenberg install` instructions above but use the `-O` output to specify the directory of the existing
+project and it'll create you a new `template` branch and attempt to merge just like an upgrade operation.
+
+Once you've completed your first merge from `template` -> `master` you can then follow the `battenberg upgrade` instructions as though it was
+generated using `battenberg` initially.
+
 ## High-level design
 
 At a high level `battenberg` attempts to provide a continuous history between the upstream template project and the cookiecut project. It does this by maintaining a disjoint `template`

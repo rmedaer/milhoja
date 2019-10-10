@@ -1,7 +1,5 @@
 import os
 import json
-import shutil
-import tempfile
 import logging
 from typing import Any, Dict
 
@@ -9,70 +7,20 @@ from pygit2 import (
     Repository,
     GIT_MERGE_ANALYSIS_UP_TO_DATE,
     GIT_MERGE_ANALYSIS_FASTFORWARD,
-    GIT_MERGE_ANALYSIS_NORMAL,
-    Worktree
+    GIT_MERGE_ANALYSIS_NORMAL
 )
 from cookiecutter.main import cookiecutter
 from battenberg.errors import (
     MergeConflictException,
-    RepositoryEmptyException,
     TemplateConflictException,
-    TemplateNotFoundException,
-    WorktreeConflictException,
-    WorktreeException
+    TemplateNotFoundException
 )
+from battenberg.temporary_worktree import TemporaryWorktree
 
 
 WORKTREE_NAME = 'templating'
 TEMPLATE_BRANCH = 'template'
 logger = logging.getLogger(__name__)
-
-
-class TemporaryWorktree:
-
-    def __init__(self, upstream: Repository, name: str, empty: bool = True):
-        if name in upstream.list_worktrees():
-            raise WorktreeConflictException(name)
-
-        self.upstream = upstream
-        self.name = name
-        # Create the worktree working directory in the /tmp directory so it's out of the way.
-        self.tmp = tempfile.mkdtemp()
-        self.path = os.path.join(self.tmp, name)
-        self.worktree = None
-        self.repo = None
-        self.empty = empty
-
-    def __enter__(self) -> 'TemporaryWorktree':
-        if self.upstream.head_is_unborn:
-            raise RepositoryEmptyException()
-
-        try:
-            self.worktree: Worktree = self.upstream.add_worktree(self.name, self.path)
-        except ValueError as error:
-            raise WorktreeException(self.name, self.path) from error
-
-        # Construct a separate repository instance so we can commit to a different copy and merge
-        # between branches.
-        self.repo = Repository(self.worktree.path)
-
-        if self.empty:
-            for entry in self.repo[self.repo.head.target].tree:
-                if os.path.isdir(os.path.join(self.path, entry.name)):
-                    shutil.rmtree(os.path.join(self.path, entry.name))
-                else:
-                    os.remove(os.path.join(self.path, entry.name))
-
-        return self
-
-    def __exit__(self, type, value, traceback):
-        shutil.rmtree(self.tmp)
-
-        # Prune temp worktree
-        if self.worktree is not None:
-            self.worktree.prune(True)
-
-        self.upstream.lookup_branch(self.name).delete()
 
 
 class Battenberg:
@@ -89,15 +37,13 @@ class Battenberg:
 
     def merge_template_branch(self, message: str, merge_target: str = None):
         branch = self.repo.lookup_branch(TEMPLATE_BRANCH)
-        merge_target_ref = self.resolve_merge_target(merge_target)
 
         merge_target_ref = 'HEAD'
         if merge_target is not None:
             # If we have a merge target, ensure we have that branch and have switched to it
             # before continuing with merging.
             merge_target_ref = f'refs/heads/{merge_target}'
-            if merge_target not in self.repo.branches:
-                self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
+            self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
             self.repo.checkout(merge_target_ref)
 
         analysis, _ = self.repo.merge_analysis(branch.target, merge_target_ref)
@@ -197,9 +143,6 @@ class Battenberg:
 
     def upgrade(self, checkout: str = 'master', extra_context: Dict = None, no_input: bool = False,
                 merge_target: str = None, context_file: str = '.cookiecutter.json'):
-        """
-
-        """
         if extra_context is None:
             extra_context = {}
 
