@@ -59,11 +59,11 @@ branch which `battenberg` attempts to keep in sync with the upstream template, i
 to the `template` are incorporated into the `master` and other branches via a `git merge --allow-unrelated-histories` command for each template update pulled in. This merge commit
 should be used to resolve any conflicts between the upstream template and the specialized project.
 
-![A new project in battenberg](img/new.png)
+![A new project in battenberg](https://github.com/zillow/battenberg/raw/master/img/new.png)
 
 *This shows the repo structure immediately after running a `battenberg install <template>` command*
 
-![An updated project in battenberg](img/updated.png)
+![An updated project in battenberg](https://github.com/zillow/battenberg/raw/master/img/updated.png)
 
 *This shows the repo structure immediately after running a `battenberg upgrade` command on the previously installed project*
 
