@@ -1,7 +1,6 @@
 # battenberg
 
 [![image](https://img.shields.io/pypi/v/battenberg.svg)](https://pypi.python.org/pypi/battenberg)
-
 [![image](https://img.shields.io/travis/zillow/battenberg.svg)](https://travis-ci.org/zillow/battenberg)
 
 Battenberg is a tool built atop of [Cookiecutter](https://github.com/audreyr/cookiecutter) to keep Cookiecut projects
