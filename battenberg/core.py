@@ -43,8 +43,7 @@ class Battenberg:
             # If we have a merge target, ensure we have that branch and have switched to it
             # before continuing with merging.
             merge_target_ref = f'refs/heads/{merge_target}'
-            if merge_target not in self.repo.branches:
-                self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
+            self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
             self.repo.checkout(merge_target_ref)
 
         analysis, _ = self.repo.merge_analysis(branch.target, merge_target_ref)
