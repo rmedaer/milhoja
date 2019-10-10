@@ -30,6 +30,12 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Zillow",
     url='https://github.com/zillow/battenberg',
+    project_urls={
+        "Documentation": "https://github.com/zillow/battenberg/README.md",
+        "Changelog": "https://github.com/zillow/battenberg/HISTORY.md",
+        "Code": "https://github.com/zillow/battenberg",
+        "Issue tracker": "https://github.com/zillow/battenberg/issues",
+    },
     packages=[
         'battenberg',
     ],

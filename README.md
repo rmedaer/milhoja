@@ -101,6 +101,8 @@ flake8 --config flake8.cfg battenberg
 
 ## Releasing a new version to PyPI
 
+**Reminder to update [`HISTORY.md`](./HISTORY.md) with a summary of any updates, especially breaking changes.**
+
 We utilize Travis CI's built in [deploy to PyPI](https://docs.travis-ci.com/user/deployment/pypi/) functionality. Specifically
 we've limited it to just publish on `git tags`. To release run:
 
