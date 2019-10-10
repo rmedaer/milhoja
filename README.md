@@ -1,7 +1,6 @@
 # battenberg
 
 [![image](https://img.shields.io/pypi/v/battenberg.svg)](https://pypi.python.org/pypi/battenberg)
-
 [![image](https://img.shields.io/travis/zillow/battenberg.svg)](https://travis-ci.org/zillow/battenberg)
 
 Battenberg is a tool built atop of [Cookiecutter](https://github.com/audreyr/cookiecutter) to keep Cookiecut projects
@@ -99,6 +98,22 @@ To run linting:
 ```bash
 flake8 --config flake8.cfg battenberg
 ```
+
+## Releasing a new version to PyPI
+
+**Reminder to update [`HISTORY.md`](./HISTORY.md) with a summary of any updates, especially breaking changes.**
+
+We utilize Travis CI's built in [deploy to PyPI](https://docs.travis-ci.com/user/deployment/pypi/) functionality. Specifically
+we've limited it to just publish on `git tags`. To release run:
+
+```bash
+# Change to the appropriate commit you want to base the release on.
+vi battenberg/__init__.py  # Update the version string.
+git tag <version>
+git push origin <version>
+```
+
+Then watch Travis CI build for any errors, eventually it should appear on the [`battenberg` PyPI](https://pypi.org/project/battenberg/) project.
 
 ## FAQ
 
