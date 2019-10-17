@@ -132,7 +132,7 @@ class Battenberg:
 
         # Create temporary worktree
         with TemporaryWorktree(self.repo, WORKTREE_NAME) as worktree:
-            cookiecutter_kwargs={
+            cookiecutter_kwargs = {
                 'template': template,
                 'checkout': checkout,
                 'no_input': no_input,
@@ -192,7 +192,7 @@ class Battenberg:
             branch = worktree.repo.lookup_branch(TEMPLATE_BRANCH)
             worktree.repo.set_head(branch.name)
 
-            cookiecutter_kwargs={
+            cookiecutter_kwargs = {
                 'template': template,
                 'checkout': checkout,
                 'no_input': no_input,
