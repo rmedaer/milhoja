@@ -166,7 +166,7 @@ class Battenberg:
         # Let's merge our changes into HEAD
         self.merge_template_branch(f'Installed template \'{template}\'')
 
-    def upgrade(self, checkout: str = 'master', extra_context: Dict = None, no_input: bool = False,
+    def upgrade(self, checkout: str = 'master', extra_context: Dict = None, no_input: bool = True,
                 merge_target: str = None, context_file: str = '.cookiecutter.json'):
         if extra_context is None:
             extra_context = {}
