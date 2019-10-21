@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import shutil
 from typing import Any, Dict
 
 from pygit2 import (
@@ -11,6 +12,7 @@ from pygit2 import (
 )
 from cookiecutter.main import cookiecutter
 from battenberg.errors import (
+    BattenbergException,
     MergeConflictException,
     TemplateConflictException,
     TemplateNotFoundException
@@ -31,8 +33,34 @@ class Battenberg:
     def is_installed(self) -> bool:
         return TEMPLATE_BRANCH in self.repo.listall_branches()
 
-    def get_context(self, context_file: str) -> Dict[str, Any]:
-        with open(os.path.join(self.repo.workdir, context_file)) as f:
+    def cookiecut(self, cookiecutter_kwargs: dict, worktree: TemporaryWorktree):
+        cookiecutter(
+            replay=False,
+            overwrite_if_exists=True,
+            output_dir=worktree.path,
+            **cookiecutter_kwargs
+        )
+
+        # Ensure the worktree looks as we'd expect.
+        NUM_RENDERED_DIRECTORIES = 2
+        worktree_ls = os.listdir(worktree.path)
+        if len(worktree_ls) != NUM_RENDERED_DIRECTORIES:
+            # There should only be ".git" & "{{cookiecutter.top_level_name}}" directories.
+            raise BattenbergException(
+                f'Unexpected file structure in temporary worktree: {worktree_ls}')
+
+        # Now to strip the level top level directory from the rendered template in the
+        # temporary worktree path.
+        rendered_template_dir = next(d for d in worktree_ls if d != '.git')
+        rendered_template_path = os.path.join(worktree.path, rendered_template_dir)
+        for file in os.listdir(rendered_template_path):
+            shutil.move(os.path.join(rendered_template_path, file), worktree.path)
+        else:
+            # Finally clean up the old rendered template path.
+            shutil.rmtree(rendered_template_path)
+
+    def get_context(self, context_file: str, base_path: str = None) -> Dict[str, Any]:
+        with open(os.path.join(base_path or self.repo.workdir, context_file)) as f:
             return json.load(f)
 
     def merge_template_branch(self, message: str, merge_target: str = None):
@@ -104,16 +132,13 @@ class Battenberg:
 
         # Create temporary worktree
         with TemporaryWorktree(self.repo, WORKTREE_NAME) as worktree:
-            cookiecutter(
-                template,
-                checkout,
-                no_input,
-                extra_context=extra_context,
-                replay=False,
-                overwrite_if_exists=True,
-                output_dir=worktree.path,
-                strip=True
-            )
+            cookiecutter_kwargs = {
+                'template': template,
+                'checkout': checkout,
+                'no_input': no_input,
+                'extra_context': extra_context
+            }
+            self.cookiecut(cookiecutter_kwargs, worktree)
 
             # Stage changes
             worktree.repo.index.add_all()
@@ -141,7 +166,7 @@ class Battenberg:
         # Let's merge our changes into HEAD
         self.merge_template_branch(f'Installed template \'{template}\'')
 
-    def upgrade(self, checkout: str = 'master', extra_context: Dict = None, no_input: bool = False,
+    def upgrade(self, checkout: str = 'master', extra_context: Dict = None, no_input: bool = True,
                 merge_target: str = None, context_file: str = '.cookiecutter.json'):
         if extra_context is None:
             extra_context = {}
@@ -167,16 +192,13 @@ class Battenberg:
             branch = worktree.repo.lookup_branch(TEMPLATE_BRANCH)
             worktree.repo.set_head(branch.name)
 
-            cookiecutter(
-                template,
-                checkout,
-                no_input,
-                extra_context=context,
-                replay=False,
-                overwrite_if_exists=True,
-                output_dir=worktree.path,
-                strip=True
-            )
+            cookiecutter_kwargs = {
+                'template': template,
+                'checkout': checkout,
+                'no_input': no_input,
+                'extra_context': context
+            }
+            self.cookiecut(cookiecutter_kwargs, worktree)
 
             # Stage changes
             worktree.repo.index.read()

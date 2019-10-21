@@ -15,9 +15,7 @@ with io.open('battenberg/__init__.py', 'rt', encoding='utf8') as f:
 
 install_requires = [
     'Click>=6.0',
-    # We need the functionality provided by this branch. See this PR for more info:
-    # https://github.com/cookiecutter/cookiecutter/pull/907
-    'cookiecutter @ https://github.com/zillow/cookiecutter/tarball/strip_dir',
+    'cookiecutter>=1.6.0',
     # You'll also need to install libgit2 to get this to work.
     # See instructions here: https://www.pygit2.org/install.html
     'pygit2>=0.28.0'

@@ -1,5 +1,9 @@
 # Release History
 
+## 0.1.1 (2019-10-17)
+
+- Revert back to relying on mainline `cookiecutter` instead of Zillow fork. (See [#9](https://github.com/zillow/battenberg/pull/9))
+
 ## 0.1.0 (2019-10-10)
 
 - Add in support for reading template context from `.cookiecutter.json`. (See [#2](https://github.com/zillow/battenberg/pull/2))

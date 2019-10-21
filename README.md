@@ -1,4 +1,4 @@
-# battenberg
+# Battenberg
 
 [![image](https://img.shields.io/pypi/v/battenberg.svg)](https://pypi.python.org/pypi/battenberg)
 [![image](https://img.shields.io/travis/zillow/battenberg.svg)](https://travis-ci.org/zillow/battenberg)
@@ -6,6 +6,14 @@
 Battenberg is a tool built atop of [Cookiecutter](https://github.com/audreyr/cookiecutter) to keep Cookiecut projects
 in sync with their parent templates. Under the hood, Battenberg relies on Git to manage the merging, diffing, and
 conflict resolution story. The first goal of Battenberg is to provide an *upgrade* feature to Cookiecutter.
+
+## Installation
+
+We publish `battenberg` to [PyPI](https://pypi.org/project/battenberg/) for easy consumption.
+
+```bash
+pip install battenberg
+```
 
 ## Prerequistes
 

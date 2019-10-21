@@ -93,9 +93,9 @@ def install(ctx, template, **kwargs):
     type=click.Path()
 )
 @click.option(
-    '--no-input', is_flag=True,
-    help='Do not prompt for parameters and only use cookiecutter.json '
-         'file content',
+    '--no-input',
+    is_flag=True,
+    help='Do not prompt for parameters and only use .cookiecutter.json file content',
 )
 @click.pass_context
 def upgrade(ctx, **kwargs):
