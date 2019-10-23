@@ -15,6 +15,9 @@ We publish `battenberg` to [PyPI](https://pypi.org/project/battenberg/) for easy
 pip install battenberg
 ```
 
+If you're on Mac OS X or Windows please follow the [installation guides](https://www.pygit2.org/install.html#) in the `pygit2` documentation
+as well as `battenberg` relies on `libgit2` which needs to be installed first.
+
 ## Prerequistes
 
 It is assumed that your cookiecutter template contains a `.cookiecutter.json` file at the root directory, or you can override its location by
