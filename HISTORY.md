@@ -1,5 +1,9 @@
 # Release History
 
+## 0.2.0 (2019-10-29)
+
+- Adds in remote fetching of `origin/template` branch during upgrades. (See [#12](https://github.com/zillow/battenberg/pull/12))
+
 ## 0.1.1 (2019-10-17)
 
 - Revert back to relying on mainline `cookiecutter` instead of Zillow fork. (See [#9](https://github.com/zillow/battenberg/pull/9))

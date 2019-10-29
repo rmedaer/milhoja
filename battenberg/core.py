@@ -5,6 +5,7 @@ import shutil
 from typing import Any, Dict
 
 from pygit2 import (
+    RemoteCallbacks,
     Repository,
     GIT_MERGE_ANALYSIS_UP_TO_DATE,
     GIT_MERGE_ANALYSIS_FASTFORWARD,
@@ -18,6 +19,7 @@ from battenberg.errors import (
     TemplateNotFoundException
 )
 from battenberg.temporary_worktree import TemporaryWorktree
+from battenberg.utils import construct_keypair
 
 
 WORKTREE_NAME = 'templating'
@@ -31,9 +33,24 @@ class Battenberg:
         self.repo = repo
 
     def is_installed(self) -> bool:
+        """Determines in the repo is already using battenberg.
+
+        Returns:
+            A boolean on whether the repo was already using battenberg to manage itself.
+        """
         return TEMPLATE_BRANCH in self.repo.listall_branches()
 
-    def cookiecut(self, cookiecutter_kwargs: dict, worktree: TemporaryWorktree):
+    def _fetch_remote_template(self):
+        # First try to pull it from the remote origin/TEMPLATE_BRANCH
+        keypair = construct_keypair()
+        self.repo.remotes['origin'].fetch([TEMPLATE_BRANCH],
+                                          callbacks=RemoteCallbacks(credentials=keypair))
+        self.repo.references.create(
+            f'refs/heads/{TEMPLATE_BRANCH}',
+            self.repo.references.get(f'refs/remotes/origin/{TEMPLATE_BRANCH}').target
+        )
+
+    def _cookiecut(self, cookiecutter_kwargs: dict, worktree: TemporaryWorktree):
         cookiecutter(
             replay=False,
             overwrite_if_exists=True,
@@ -59,11 +76,11 @@ class Battenberg:
             # Finally clean up the old rendered template path.
             shutil.rmtree(rendered_template_path)
 
-    def get_context(self, context_file: str, base_path: str = None) -> Dict[str, Any]:
+    def _get_context(self, context_file: str, base_path: str = None) -> Dict[str, Any]:
         with open(os.path.join(base_path or self.repo.workdir, context_file)) as f:
             return json.load(f)
 
-    def merge_template_branch(self, message: str, merge_target: str = None):
+    def _merge_template_branch(self, message: str, merge_target: str = None):
         branch = self.repo.lookup_branch(TEMPLATE_BRANCH)
 
         merge_target_ref = 'HEAD'
@@ -71,7 +88,8 @@ class Battenberg:
             # If we have a merge target, ensure we have that branch and have switched to it
             # before continuing with merging.
             merge_target_ref = f'refs/heads/{merge_target}'
-            self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
+            if merge_target not in self.repo.listall_branches():
+                self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
             self.repo.checkout(merge_target_ref)
 
         analysis, _ = self.repo.merge_analysis(branch.target, merge_target_ref)
@@ -119,10 +137,31 @@ class Battenberg:
             self.repo.state_cleanup()
             self.repo.checkout('HEAD')
         else:
-            raise AssertionError(f'Unknown merge analysis result: {analysis}')
+            raise BattenbergException(f'Unknown merge analysis result: {analysis}')
 
     def install(self, template: str, checkout: str = 'master', extra_context: Dict = None,
                 no_input: bool = False):
+        """Creates a fresh template install within the supplied repo.
+
+        Generates a template using the provided context, or invokes the questionnaire to elicit it.
+
+        Args:
+            template: The path (either local or git) to the template project. It must follow
+            the cookiecutter format to be compatible with battenberg.
+            checkout: The new state to pull from the template, normally this will be a git tag on
+            the template repo.
+            no_input: Whether to ask the user to answer the template questions again or take the
+            default answers from the templates "cookiecutter.json".
+            extra_context: A set of template overrides that will supercede those found in the
+            "context_file" or those provided by answering the template questionnaire.
+
+        Raises:
+            MergeConflictException: Thrown when an upgrade results in merge conflicts between the
+            template branch and the merge-target branch.
+            TemplateConflictException: When the repo already contains a template branch. If you
+            encounter this please run "battenberg upgrade" instead.
+        """
+
         if extra_context is None:
             extra_context = {}
 
@@ -138,7 +177,7 @@ class Battenberg:
                 'no_input': no_input,
                 'extra_context': extra_context
             }
-            self.cookiecut(cookiecutter_kwargs, worktree)
+            self._cookiecut(cookiecutter_kwargs, worktree)
 
             # Stage changes
             worktree.repo.index.add_all()
@@ -164,19 +203,47 @@ class Battenberg:
             worktree.repo.set_head(branch.name)
 
         # Let's merge our changes into HEAD
-        self.merge_template_branch(f'Installed template \'{template}\'')
+        self._merge_template_branch(f'Installed template \'{template}\'')
 
-    def upgrade(self, checkout: str = 'master', extra_context: Dict = None, no_input: bool = True,
-                merge_target: str = None, context_file: str = '.cookiecutter.json'):
+    def upgrade(self, checkout: str = 'master', no_input: bool = True, merge_target: str = None,
+                context_file: str = '.cookiecutter.json', extra_context: Dict = None):
+        """Updates a repo using the found template context.
+
+        Generates and applies any updates from the current repo state to the template state defined
+        by "checkout". It does this by reading the existing template context state defined within
+        "context_file" and using that to pull in any new updates.
+
+        Args:
+            checkout: The new state to pull from the template, normally this will be a git tag on
+            the template repo.
+            no_input: Whether to ask the user to answer the template questions again or take the
+            answers from the template context defined in "context_file".
+            merge_target: A branch to checkout other than the current HEAD. Useful if you're
+            upgrading a project you do not directly own.
+            context_file: Where battenberg should look to read the template context.
+            extra_context: A set of template overrides that will supercede those found in the
+            "context_file" or those provided by answering the template questionnaire.
+
+        Raises:
+            MergeConflictException: Thrown when an upgrade results in merge conflicts between the
+            template branch and the merge-target branch.
+            TemplateNotFoundException: When the repo does not already contain a template branch. If
+            you encounter this please run "battenberg install" instead.
+        """
+
         if extra_context is None:
             extra_context = {}
 
-        # Assert template branch exist or raise an error
         if not self.is_installed():
-            raise TemplateNotFoundException()
+            try:
+                self._fetch_remote_template()
+            except KeyError as e:
+                # Cannot find the origin remote branch.
+                logger.error(e)
+                raise TemplateNotFoundException() from e
 
         # Get last context used to apply template
-        context = self.get_context(context_file)
+        context = self._get_context(context_file)
         logger.debug(f'Found context: {context}')
         # Fetch template information, this is normally the git:// URL.
         template = context['_template']
@@ -198,7 +265,7 @@ class Battenberg:
                 'no_input': no_input,
                 'extra_context': context
             }
-            self.cookiecut(cookiecutter_kwargs, worktree)
+            self._cookiecut(cookiecutter_kwargs, worktree)
 
             # Stage changes
             worktree.repo.index.read()
@@ -221,4 +288,4 @@ class Battenberg:
         self.repo.lookup_branch(TEMPLATE_BRANCH).set_target(commit.hex)
 
         # Let's merge our changes into HEAD
-        self.merge_template_branch(f'Upgraded template \'{template}\'', merge_target)
+        self._merge_template_branch(f'Upgraded template \'{template}\'', merge_target)
