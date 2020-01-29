@@ -4,12 +4,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))  # noqa: E402
 
 
 import logging
+import subprocess
 import click
-from cookiecutter.cli import validate_extra_context
-from cookiecutter.exceptions import CookiecutterException
 from battenberg.core import Battenberg
 from battenberg.utils import open_repository, open_or_init_repository
-from battenberg.errors import BattenbergException
+from battenberg.errors import MergeConflictException
 
 
 logger = logging.getLogger('battenberg')
@@ -33,7 +32,7 @@ logger.addHandler(handler)
     help='Enables the debug logging.'
 )
 @click.pass_context
-def main(ctx, o, verbose):
+def main(ctx, o: str, verbose: bool):
     """
     \f
 
@@ -55,7 +54,6 @@ def main(ctx, o, verbose):
 
 @main.command()
 @click.argument('template')
-@click.argument('extra_context', nargs=-1, callback=validate_extra_context)
 @click.option(
     '--checkout',
     help='branch, tag or commit to checkout',
@@ -66,16 +64,12 @@ def main(ctx, o, verbose):
     help='Do not prompt for parameters and only use cookiecutter.json file content',
 )
 @click.pass_context
-def install(ctx, template, **kwargs):
-    try:
-        battenberg = Battenberg(open_or_init_repository(ctx.obj['target']))
-        battenberg.install(template, **kwargs)
-    except (BattenbergException, CookiecutterException) as error:
-        raise click.ClickException from error
+def install(ctx, template: str, **kwargs):
+    battenberg = Battenberg(open_or_init_repository(ctx.obj['target']))
+    battenberg.install(template, **kwargs)
 
 
 @main.command()
-@click.argument('extra_context', nargs=-1, callback=validate_extra_context)
 @click.option(
     '--checkout',
     help='branch, tag or commit to checkout',
@@ -102,5 +96,11 @@ def upgrade(ctx, **kwargs):
     try:
         battenberg = Battenberg(open_repository(ctx.obj['target']))
         battenberg.upgrade(**kwargs)
-    except (BattenbergException, CookiecutterException) as error:
-        raise click.ClickException from error
+    except MergeConflictException:
+        # Just run "git status" in a subprocess so we don't have to re-implement the formatting
+        # logic atop pygit2.
+        completed_process = subprocess.run(['git', 'status'], stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT)
+        click.echo(completed_process.stdout.decode('utf-8'))
+        click.echo('Cannot merge upgrade automatically, please manually resolve the conflicts')
+        sys.exit(1)  # Ensure we exit with a failure code.
