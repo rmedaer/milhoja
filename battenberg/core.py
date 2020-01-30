@@ -246,6 +246,7 @@ class Battenberg:
             cookiecutter_kwargs = {
                 'template': template,
                 'checkout': checkout,
+                'extra_context': context,
                 'no_input': no_input
             }
             self._cookiecut(cookiecutter_kwargs, worktree)

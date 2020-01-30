@@ -1,5 +1,9 @@
 # Release History
 
+## 0.2.2 (2010-01-29)
+
+- Fix regression that stopped injecting context when upgrading.
+
 ## 0.2.1 (2010-01-29)
 
 - Cleans up error message when merging results in conflicts. (See [#13](https://github.com/zillow/battenberg/pull/13))
