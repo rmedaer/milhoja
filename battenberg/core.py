@@ -48,11 +48,15 @@ class Battenberg:
                                           callbacks=RemoteCallbacks(credentials=keypair))
         self.repo.references.create(
             f'refs/heads/{TEMPLATE_BRANCH}',
-            self.repo.references.get(f'refs/remotes/origin/{TEMPLATE_BRANCH}').target
+            self.repo.references.get(
+                f'refs/remotes/origin/{TEMPLATE_BRANCH}').target
         )
 
-    def _cookiecut(self, cookiecutter_kwargs: dict, worktree: TemporaryWorktree):
+    def _cookiecut(self, cookiecutter_kwargs: dict,
+                   worktree: TemporaryWorktree):
         with tempfile.TemporaryDirectory() as tmpdir:
+            logger.debug(
+                f"Cookiecutting {cookiecutter_kwargs['template']} into {tmpdir}")
             cookiecutter(
                 replay=False,
                 overwrite_if_exists=True,
@@ -60,12 +64,15 @@ class Battenberg:
                 **cookiecutter_kwargs
             )
 
-            # Cookiecutter guarantees a single top-level directory after templating.
+            # Cookiecutter guarantees a single top-level directory after
+            # templating.
+            logger.debug('Shifting directories down a level')
             top_level_dir = os.path.join(tmpdir, os.listdir(tmpdir)[0])
             for f in os.listdir(top_level_dir):
                 shutil.move(os.path.join(top_level_dir, f), worktree.path)
 
-    def _get_context(self, context_file: str, base_path: str = None) -> Dict[str, Any]:
+    def _get_context(self, context_file: str,
+                     base_path: str = None) -> Dict[str, Any]:
         with open(os.path.join(base_path or self.repo.workdir, context_file)) as f:
             return json.load(f)
 
@@ -78,7 +85,9 @@ class Battenberg:
             # before continuing with merging.
             merge_target_ref = f'refs/heads/{merge_target}'
             if merge_target not in self.repo.listall_branches():
-                self.repo.branches.local.create(merge_target, self.repo.get(self.repo.head.target))
+                self.repo.branches.local.create(
+                    merge_target, self.repo.get(
+                        self.repo.head.target))
             self.repo.checkout(merge_target_ref)
 
         analysis, _ = self.repo.merge_analysis(branch.target, merge_target_ref)
@@ -96,9 +105,12 @@ class Battenberg:
             #
             #     "git merge --allow-unrelated-histories template"
             #
+            logger.debug(
+                'Forcing merge of template branch into target branch.')
             self.repo.merge(branch.target)
 
-            # If there is a conflict we should error and let the user manually resolve it.
+            # If there is a conflict we should error and let the user manually
+            # resolve it.
             if self.repo.index.conflicts is not None:
                 raise MergeConflictException(
                     f'Cannot merge the template commit ({branch.target}) with the current HEAD '
@@ -124,8 +136,11 @@ class Battenberg:
             # worktree into the main HEAD.
             self.repo.state_cleanup()
             self.repo.checkout('HEAD')
+
+            logger.debug('Successfully applied changes.')
         else:
-            raise BattenbergException(f'Unknown merge analysis result: {analysis}')
+            raise BattenbergException(
+                f'Unknown merge analysis result: {analysis}')
 
     def install(self, template: str, checkout: str = 'master',
                 no_input: bool = False):
@@ -160,6 +175,8 @@ class Battenberg:
                 'no_input': no_input
             }
             self._cookiecut(cookiecutter_kwargs, worktree)
+            logger.debug(
+                f"Successfully cookiecut {cookiecutter_kwargs['template']} into {worktree.path}.")
 
             # Stage changes
             worktree.repo.index.add_all()
@@ -185,6 +202,7 @@ class Battenberg:
             worktree.repo.set_head(branch.name)
 
         # Let's merge our changes into HEAD
+        logger.debug('Merging changes into HEAD.')
         self._merge_template_branch(f'Installed template \'{template}\'')
 
     def upgrade(self, checkout: str = 'master', no_input: bool = True, merge_target: str = None,
@@ -261,4 +279,5 @@ class Battenberg:
         self.repo.lookup_branch(TEMPLATE_BRANCH).set_target(commit.hex)
 
         # Let's merge our changes into HEAD
-        self._merge_template_branch(f'Upgraded template \'{template}\'', merge_target)
+        self._merge_template_branch(
+            f'Upgraded template \'{template}\'', merge_target)
