@@ -1,5 +1,10 @@
 # Release History
 
+## 0.4.0 (2020-10-13)
+
+- Remove `master` as the default `git` target branch terminology to promote equity and belonging. Instead rely on remote HEAD to infer default branch naming convention.
+- Add in `--initial-branch` optional argument to `battenberg install` to specify the initial branch to create when initializing a new project.
+
 ## 0.3.0 (2020-05-29)
 
 - Update `pygit2` dependency to `>= 1.0`, can now rely on `libgit2 >= 1.0` too. (See [#18](https://github.com/zillow/battenberg/pull/18))
