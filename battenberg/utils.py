@@ -4,19 +4,32 @@ import re
 import subprocess
 from typing import Optional
 from pygit2 import discover_repository, init_repository, Keypair, Repository
+from battenberg.errors import InvalidRepositoryException
 
 
 logger = logging.getLogger(__name__)
 
 
 def open_repository(path: str) -> Repository:
-    return Repository(discover_repository(path))
+    try:
+        repo_path = discover_repository(path)
+    except Exception as e:
+        # Looks like exceptions raised in the C code from pygit2 are all of type Exception so
+        # we're forced to rely on the message to interpret.
+        if 'No repo found' in str(e):
+            raise InvalidRepositoryException(path)
+        raise
+
+    if not repo_path:
+        raise InvalidRepositoryException(path)
+
+    return Repository(repo_path)
 
 
 def open_or_init_repository(path: str, template: str, initial_branch: Optional[str] = None):
     try:
         return open_repository(path)
-    except Exception:
+    except InvalidRepositoryException:
         # Not found any repo, let's make one.
         pass
 
